@@ -1,0 +1,11 @@
+{
+  "name": "deentrivia_back",
+  "version": "1.0.0",
+  "description": "Backend ",
+  "main": "server.js",
+  "scripts": {
+    "test": "jasmine"
+  },
+  "author": "Saheed Ajibulu",
+  "license": "ISC"
+}
