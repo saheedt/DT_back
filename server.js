@@ -1,35 +1,49 @@
-let express = require('express'),
+'use strict';
+const express = require('express'),
 	bodyParser = require('body-parser'),
 	path = require('path'),
 	expressValidator = require('express-validator'),
 	cookieParser = require('cookie-parser'),
 	session = require('express-session'),
-	mongojs = require('mongojs');
+	MongoStore = require('connect-mongo')(session),
+	mongojs = require('mongojs'),
+	app = express();
 	require('dotenv').config();
 
-let app = express();
-let MongoStore = require('connect-mongo');
 
-let db = mongojs(process.env.DBConnectString, [process.env.UsersCollection, process.env.LeaderboardCollection, process.env.CategoryCollection]);
+const db = mongojs(process.env.DBConnectString,
+	[process.env.UsersCollection, process.env.LeaderboardCollection, 
+	process.env.CategoryCollection, process.env.SessionCollection]);
+
+let port = process.env.ServerPort;
 let ObjectId = mongojs.ObjectId;
-db.users.find((err, docs)=>{
-	if (err){
-		console.log(err);
-	}else{
-		console.log(docs)
-	}
-})
 
-//app.use(cookieParser(process.env.secretKey));
-//mongo store not working..
-/*app.use(session({
+/*db.users.find((err, docs)=>{
+	if (!err){
+		console.log(docs);
+		return;
+	}
+	console.log(err)
+});
+db.sessions.find((err, docs)=>{
+	if(!err){
+		console.log(docs);
+		return;
+	}
+	console.log(err);
+});*/
+
+app.use(session({
 	secret: process.env.secretKey,
+	resave: true,
+	saveUninitialized: false,
 	store: new MongoStore({
-		db: process.env.DBConnectString,
-		//host: process.env.DBHost,
-		//port : process.env.DBPort
+		host: process.env.DBHost,
+		port: process.env.DBPort,
+		url: process.env.DBConnectString,
+		auto_reconnect: true
 	})
-}));*/
+}));
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -62,5 +76,6 @@ db.on('error', (err)=>{
 	console.log('database error', err);
 });
 
-app.listen(3000);
-console.log('dt_back started on port 3000');
+
+app.listen(port);
+console.log('dt_back started on port:', port);
