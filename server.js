@@ -79,3 +79,4 @@ db.on('error', (err)=>{
 
 app.listen(port);
 console.log('dt_back started on port:', port);
+export db;
