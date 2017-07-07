@@ -5,7 +5,7 @@ const controllers = require('../controllers/controllers.js');
 export default function routes (app) {
 
 	//View routes..
-	app.route('/').get(/*controllers.showLogin*/);
+	app.route('/').get(controllers.showLogin);
 	app.route('/home').get(/*controllers.showHome*/);
 	app.route('/add').get(/*controllers.showAdd*/)
 

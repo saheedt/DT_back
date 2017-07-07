@@ -76,7 +76,7 @@ db.on('error', (err)=>{
 	console.log('database error', err);
 });
 
-
+routes(app);
 app.listen(port);
 console.log('dt_back started on port:', port);
 export db;

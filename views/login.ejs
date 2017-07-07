@@ -1,0 +1,34 @@
+<% include global/transpHeader %>
+
+	<div>
+		<h1> <%= title %> </h1>
+
+		<% if ((errors) && (typeof(errors) === "object")){ %>
+			<ul>
+				<% errors.forEach(function(error){ %>
+					<li><%= error.msg %></li>
+				<% }) %>
+			</ul>
+		<% } %>
+		<% if ((errors) && (typeof(errors) === "string")){ %>
+			<ul>
+				<li><%= errors %></li>
+			</ul>
+		<% } %>
+		<form method="post" action="/api/login">
+		  <div class="form-group">
+		    <label for="email">Email address:</label>
+		    <input type="email" class="form-control" name="email">
+		  </div>
+		  <div class="form-group">
+		    <label for="password">Password:</label>
+		    <input type="password" class="form-control" name="password">
+		  </div>
+		  <!--<div class="checkbox">
+		    <label><input type="checkbox"> Remember me</label>
+		  </div>-->
+		  <button type="submit" class="btn btn-primary">Submit</button>
+		</form>
+	</div>
+
+	<% include global/footer %>
