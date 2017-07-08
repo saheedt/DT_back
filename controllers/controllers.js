@@ -1,19 +1,20 @@
 'use strict';
 
 //import opened DB connection from server.js
-import db from 'server';
+const db = require('../server').db;
 
-export function showLogin(req, res){
+exports.showLogin = (req, res) => {
 	if (req.session.user){
 		res.redirect('/home');
 		return;
 	}
 	res.render('login', {
-		title: 'Sign In'
+		title: 'Sign In',
+		errors: ''
 	});
 }
 
-export function showHome(req, res){
+exports.showHome = (req, res) => {
 	if(!req.session.user){
 		res.redirect('/');
 		return;
@@ -21,7 +22,7 @@ export function showHome(req, res){
 	//res.render();
 }
 
-export function showAdd(req, res){
+exports.showAdd = (req, res) => {
 	if(!req.session.user){
 		res.redirect('/');
 		return;

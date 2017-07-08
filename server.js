@@ -1,4 +1,5 @@
 'use strict';
+const routes = require('./routers/routes').routes ;
 const express = require('express'),
 	bodyParser = require('body-parser'),
 	path = require('path'),
@@ -79,4 +80,4 @@ db.on('error', (err)=>{
 routes(app);
 app.listen(port);
 console.log('dt_back started on port:', port);
-export db;
+exports.db;

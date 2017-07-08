@@ -2,7 +2,7 @@
 
 const controllers = require('../controllers/controllers.js');
 
-export default function routes (app) {
+exports.routes = (app) => {
 
 	//View routes..
 	app.route('/').get(controllers.showLogin);
