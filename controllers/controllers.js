@@ -53,7 +53,7 @@ const createLevelByCategory = (category, newLevel) => {
 	};
 
 	return new Promise((resolve, reject) => {
-		db.category.update({"categoryname": category}, { $push: { levels: levelData}}, (err, doc) => {
+		db.category.update({"categoryname": category}, { $push: { "levels": levelData}}, (err, doc) => {
 
 			if(err){
 				reject(err);
@@ -61,8 +61,8 @@ const createLevelByCategory = (category, newLevel) => {
 			}
 
 			if(doc){
-				categories = doc;
-				resolve(doc.levels);
+				//categories = doc;
+				resolve(doc);
 				return;
 			}
 		});
@@ -244,7 +244,7 @@ exports.level = (req, res) => {
 		return;
 	}
 
-	fetchLevelByCategory(req.body.category).then((levels)=>{
+	fetchLevelByCategory(req.body.category).then((level)=>{
 		console.log("getLevel resolve", levels);
 		res.render('add', {
 			category: categories,
@@ -263,5 +263,49 @@ exports.level = (req, res) => {
 	});
 
 
+}
+
+exports.createLevel = (req, res) => {
+	let errors;
+	req.checkBody('category', 'category is required.').notEmpty();
+	req.checkBody('newlevel', 'level is required.').notEmpty();
+
+	errors = req.validationErrors();
+
+	if (errors){
+		res.render('add', {
+			category: categories,
+			errors: errors
+		});
+		return;
+	}
+
+	createLevelByCategory(req.body.category, req.body.newlevel).then((level)=>{
+
+		fetchLevelByCategory(req.body.category).then((doc)=>{
+			console.log("getLevel in createLevelByCategory resolve", levels);
+			res.render('add', {
+				category: categories,
+				level: levels,
+				errors: ''
+			});
+
+		}, (err)=>{
+			console.log("getLevel in createLevelByCategory reject", err);
+			res.render('add', {
+				category: categories,
+				level: levels,
+				errors: 'Error updating levels list.'
+			});
+
+		});
+	}, (err)=>{
+		console.log("createLevelByCategory reject", err);
+		res.render('add', {
+			category: categories,
+			level: levels,
+			errors: 'Error creating new level in category.'
+		});
+	});
 }
 

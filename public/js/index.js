@@ -39,5 +39,18 @@ window.addEventListener('load', () => {
 		});
 	});
 
+	newLevelBtn.addEventListener('click', (e)=>{
+		let levdata = {
+			"category": categorySelect.value,
+			"newlevel" newLevel.value: 
+		};
+
+		fetch(location.origin+"/api/createlevel", {
+  		method: "POST",
+  		headers:{'Content-Type':'application/json'},
+  		body: JSON.stringify(levdata)
+		});
+	});
+
 
 });

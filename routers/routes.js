@@ -14,16 +14,16 @@ exports.routes = (app) => {
 	//login routes
 	app.route('/api/createuser').post(/*controllers.createUser*/);
 	app.route('/api/login').post(/*controllers.login*/);
-	app.route('/api/createappuser').post(/*controllers.createAppUser*/);
-	app.route('/api/applogin').post(/*controllers.appLogin*/);
+	app.route('/api/createBackuser').post(/*controllers.createBackUser*/);
+	//app.route('/api/applogin').post(/*controllers.appLogin*/);
 
 	//category routes
 	app.route('/api/createcategory').post(controllers.createCategory);
 	app.route('api/deletecategory').post(/*controllers.deletcategory*/);
-	app.route('/api/category').get(/*controllers.getCategory*/)
+	app.route('/api/category').get(controllers.getCategory)
 
 	//level routes
-	app.route('/api/createlevel').post(/*controllers.createLevel*/);
+	app.route('/api/createlevel').post(controllers.createLevel);
 	app.route('/api/deletelevel').post(/*controllers.deleteLevel*/);
 	app.route('/api/level').post(controllers.level);
 
