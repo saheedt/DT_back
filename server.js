@@ -52,7 +52,14 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
-app.use(express.static(path.join(__dirname, 'public')));
+//path.join(__dirname, 'public')
+app.use(express.static('public'));
+
+app.use((req, res, next) =>{
+	res.locals.errors = null;
+	res.locals.docs = null;
+	next();
+});
 
 app.use(expressValidator({
 	errorFormatter: (param, msg, value)=>{

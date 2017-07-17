@@ -1,0 +1,24 @@
+<% include global/header %>
+
+<div>
+	
+	<% if ((errors) && (typeof(errors) === "object")){ %>
+			<ul>
+				<% errors.forEach(function(error){ %>
+					<li><%= error.msg %></li>
+				<% }) %>
+			</ul>
+		<% } %>
+		<% if ((errors) && (typeof(errors) === "string")){ %>
+			<ul>
+				<li><%= errors %></li>
+			</ul>
+		<% } %>
+
+	<div style="border: 1px solid grey; width: 50%; margin-left: 25%; height: 30rem">
+		<a href="/add"><span class="glyphicon glyphicon-pencil"></span>ADD</a>
+
+	</div>
+</div>
+
+<% include global/footer %>

@@ -15,5 +15,65 @@
 			</ul>
 		<% } %>
 
-		
+		<div class="divider"></div><br>
+		<div class="form-group">
+		    <input type="text" class="inputNew" name="newCategory" id="newCat" placeholder="Add New Category"><button id="newCatBtn" class="addNew">ADD</button>
+		    <center><span> or </span></center>
+		    <select id ="categorySelect" name="categorySelect" class="form-control">
+	        	<option value=""> --Select Category-- </option>
+	        	<% if(category){ %>
+	        		<% category.forEach(function(cat){ %>
+	        			<option value = " <%= cat.categoryname %> "> <%= cat.categoryname %> </option>
+	        		<% }) %>
+	        	<% } %>
+	        	<% if ((category) && (typeof(category) === "string")){ %>
+	        		<option value = " <%= category %> "> <%= category %> </option>
+
+	        		<!---to delete-->
+					<!--<ul>
+						<li><%= category %></li>
+					</ul>-->
+				<% } %>
+
+	        </select>
+		</div><br>
+		<div class="divider"></div><br>
+
+		<div class="form-group">
+		    <input type="text" class="inputNew" name="newLevel" id="newLev" placeholder="Add New Level"><button id="newLevBtn" class="addNew">ADD</button>
+		    <center><span> or </span></center>
+		    <select id ="levelSelect" name="levelSelect" class="form-control">
+	        	<option value=""> --Select Level-- </option>
+	        	<% if(level){ %>
+	        		<% level.forEach(function(lev){ %>
+	        			<option value = " <%= lev.levelname %> "> <%= lev.levelname %> </option>
+	        		<% }) %>
+	        	<% } %>
+	        	<% if ((level) && (typeof(level) === "string")){ %>
+	        		<option value = " <%= level %> "> <%= level %> </option>
+
+	        		<!---to delete-->
+					<!--<ul>
+						<li><%= level %></li>
+					</ul>-->		
+				<% } %>
+
+	        </select>
+		</div><br>
+		<div class="divider"></div><br>
+
+		<div class="form-group">
+		    <input type="text" class="form-control" name="question" id="newQuestn" placeholder="Add New Question"><br>
+		    <div class="divider"></div><br>
+		    <input type="text" class="form-control" name="optionA" id="optnA" placeholder="Option A">
+		    <input type="text" class="form-control" name="optionB" id="optnB" placeholder="Option B">
+		    <input type="text" class="form-control" name="optionC" id="optnC" placeholder="Option C">
+		    <input type="text" class="form-control" name="optionD" id="optnD" placeholder="Option D"><br>
+		    <input type="text" class="form-control" name="answer" id="answer" placeholder="Correct Answer"><br>
+
+		    <center><button id="questnSubmitBtn" class="submitQuestion">Submit Question</button></center>
+		</div>
+
 	</div>
+
+	<% include global/footer %>
