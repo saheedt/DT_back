@@ -1,7 +1,7 @@
 <% include global/transpHeader %>
 
 	<div>
-		<h1> <%= title %> </h1>
+		<h1 id="loginTitle"> <%= title %> </h1>
 
 		<% if ((errors) && (typeof(errors) === "object")){ %>
 			<ul>
@@ -27,7 +27,7 @@
 		  <!--<div class="checkbox">
 		    <label><input type="checkbox"> Remember me</label>
 		  </div>-->
-		  <button type="submit" class="btn btn-primary">Submit</button>
+		  <button type="submit" id="loginBtnSubmit" class="btn btn-primary">Submit</button>
 		</form>
 	</div>
 

@@ -12,9 +12,9 @@ exports.routes = (app) => {
 	//DB routes..
 
 	//login routes
-	app.route('/api/createuser').post(/*controllers.createUser*/);
+	app.route('/api/createuser').post(controllers.createUser);
 	app.route('/api/login').post(/*controllers.login*/);
-	app.route('/api/createBackuser').post(/*controllers.createBackUser*/);
+	app.route('/api/createBackuser').post(controllers.createBackUser);
 	//app.route('/api/applogin').post(/*controllers.appLogin*/);
 
 	//category routes
@@ -29,6 +29,7 @@ exports.routes = (app) => {
 
 	//question routes
 	app.route('/api/createquestion').post(/*controllers.createQuestion*/);
+	app.route('/api/deletequestion').post(/*controllers.getQuestions*/);
 	app.route('/api/deletequestion').post(/*controllers.deleteQuestion*/);
 
 	//score route

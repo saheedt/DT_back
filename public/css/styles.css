@@ -20,3 +20,12 @@
 	width: 40%;
 	background-color: yellow;
 }
+
+#loginBtnSubmit{
+	width: 20%;
+	margin-left: 40%
+}
+#loginTitle{
+	width: 30%;
+	margin-left: 40%
+}
