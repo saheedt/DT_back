@@ -213,8 +213,43 @@ exports.login = (req, res) => {
 
 	errors = req.validationErrors();
 
-	
+	if(errors){
+		res.render('login', {
+			title: 'Sign In',
+			errors: errors
+		});
+	}
+	db.users.findOne({"email": req.body.email}, {email:1, password: 1, admin: 1, screenname: 1}, (err, doc)=>{
+		if(err){
+			res.render('login', {
+				title: 'Sign In',
+				errors: 'email address not found on this platform.'
+			});
+		}else{
+			//req.session.user = doc;
+			if( doc == null){
+				res.render('login', {
+					title: 'Sign In',
+					errors: 'you have to sign up first!!!'
+				});				
+			}else{
+				bcrypt.compare(req.body.password, doc.password, (err, res) => {
+					if(res){
+						res.render('home', {
+							errors: ''
+						});
+					}
 
+					if(err){
+						res.render('login', {
+							title: 'Sign In',
+							errors: 'incorrect password.'
+						});						
+					}
+				});
+			}
+		}
+	});
 }
 
 exports.getCategory = (req, res) => {
