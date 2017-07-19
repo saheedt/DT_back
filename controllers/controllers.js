@@ -1,11 +1,22 @@
 'use strict';
 
-//import opened DB connection from server.js
-const db = require('../server').db;
-const bcrypt = require('bcrypt');
-const saltRounds = 10;
+const mongojs = require('mongojs'),
+      bcrypt = require('bcrypt'),
+      saltRounds = 10;
+      require('dotenv').config();
 
 let categories, levels;
+//DB connection
+const db = mongojs(process.env.DBConnectString,
+	[process.env.UsersCollection, process.env.LeaderboardCollection, 
+	process.env.CategoryCollection, process.env.SessionCollection]);
+
+db.on('connect', ()=>{
+	console.log('database connected');
+});
+db.on('error', (err)=>{
+	console.log('database error', err);
+});
 
 const fetchCategories = () => {
 	return new Promise((resolve, reject) => {
@@ -113,12 +124,13 @@ exports.showAdd = (req, res) => {
 exports.createUser = (req, res) => {
 	//db.users.
 	let errors;
-	req.checkBody('email', 'Email is required.').notEmpty();
+	req.checkBody('email', 'email is required.').notEmpty();
+	req.checkBody('email', 'email is required.').notEmpty();
 	req.checkBody('screenname', 'Screen Name is required.').notEmpty();
 	req.checkBody('password', 'Password is required.').notEmpty();
 	req.checkBody('password_repeat', 'Password confirmation is required.').notEmpty();
 	req.checkBody('admin', 'You are not allowed here.').notEmpty();
-	req.checkBody('admin', 'You are not allowed this resource.').equals(0);
+	req.checkBody('admin', 'You are not allowed this resource.').equals('0');
 	req.checkBody('password_repeat', 'Passwords do not match').equals(req.body.password);
 
 	errors = req.validationErrors();
@@ -161,13 +173,14 @@ exports.createUser = (req, res) => {
 exports.createBackUser = (req, res) => {
 	let errors;
 
-	req.checkBody('email', 'Email is required.').notEmpty();
+	req.checkBody('email', 'email is required.').notEmpty();
+	req.checkBody('email', 'invalid mail.').isEmail();
 	//req.checkBody('screenname', 'Screen Name is required.').notEmpty();
-	req.checkBody('password', 'Password is required.').notEmpty();
-	req.checkBody('password_repeat', 'Password confirmation is required.').notEmpty();
-	req.checkBody('admin', 'You are not allowed here.').notEmpty();
-	req.checkBody('admin', 'You are not allowed this resource.').equals(1);
-	req.checkBody('password_repeat', 'Passwords do not match').equals(req.body.password);
+	req.checkBody('password', 'password is required.').notEmpty();
+	req.checkBody('password_repeat', 'password confirmation is required.').notEmpty();
+	req.checkBody('admin', 'you are not allowed here.').notEmpty();
+	req.checkBody('admin', 'you are not allowed this resource.').equals('1');
+	req.checkBody('password_repeat', 'passwords do not match').equals(req.body.password);
 
 
 	errors = req.validationErrors();
@@ -207,9 +220,12 @@ exports.createBackUser = (req, res) => {
 }
 
 exports.login = (req, res) => {
+	console.log('server login got called..');
 	let errors;
 	req.checkBody('email', 'Email is Required').notEmpty();
 	req.checkBody('password', 'Password is required.').notEmpty();
+	console.log("email value: ", req.body.email);
+	console.log("password value: ", req.body.password);
 
 	errors = req.validationErrors();
 
@@ -218,33 +234,60 @@ exports.login = (req, res) => {
 			title: 'Sign In',
 			errors: errors
 		});
+		return;
 	}
-	db.users.findOne({"email": req.body.email}, {email:1, password: 1, admin: 1, screenname: 1}, (err, doc)=>{
+	db.users.findOne({"email": req.body.email}, {email: 1, password: 1, admin: 1, screenname: 1}, (err, doc)=>{
+		let output;
 		if(err){
 			res.render('login', {
 				title: 'Sign In',
 				errors: 'email address not found on this platform.'
 			});
+			return;
 		}else{
 			//req.session.user = doc;
 			if( doc == null){
 				res.render('login', {
 					title: 'Sign In',
 					errors: 'you have to sign up first!!!'
-				});				
+				});
+				return;
 			}else{
 				bcrypt.compare(req.body.password, doc.password, (err, res) => {
 					if(res){
-						res.render('home', {
-							errors: ''
-						});
+						if(doc.admin == "1"){
+							req.session.user = doc;
+
+							/*res.render('home', {
+								errors: ''
+							});*/
+							res.redirect('/home');
+							return;
+						}
+						if(doc.admin == "0"){
+							output = {
+								"email": doc.email,
+								"screenname": doc.screenname,
+								"type": "client"
+							};
+							res.send({"user": output});
+							return;
+						}
+						
 					}
 
 					if(err){
-						res.render('login', {
-							title: 'Sign In',
-							errors: 'incorrect password.'
-						});						
+						if(doc.admin == "1"){
+							res.render('login', {
+								title: 'Sign In',
+								errors: 'incorrect password.'
+							});
+							return;
+						}
+						if(doc.admin == "0"){
+							res.send({"error": "incorrect password."});
+							return;
+						}						
 					}
 				});
 			}

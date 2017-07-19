@@ -7,17 +7,12 @@ const express = require('express'),
 	cookieParser = require('cookie-parser'),
 	session = require('express-session'),
 	MongoStore = require('connect-mongo')(session),
-	mongojs = require('mongojs'),
 	app = express();
 	require('dotenv').config();
 
 
-const db = mongojs(process.env.DBConnectString,
-	[process.env.UsersCollection, process.env.LeaderboardCollection, 
-	process.env.CategoryCollection, process.env.SessionCollection]);
-
 let port = process.env.ServerPort;
-let ObjectId = mongojs.ObjectId;
+//let ObjectId = mongojs.ObjectId;
 
 /*db.users.find((err, docs)=>{
 	if (!err){
@@ -77,14 +72,7 @@ app.use(expressValidator({
 			};
 	}
 }));
-db.on('connect', ()=>{
-	console.log('database connected');
-});
-db.on('error', (err)=>{
-	console.log('database error', err);
-});
 
 routes(app);
 app.listen(port);
 console.log('dt_back started on port:', port);
-exports.db;

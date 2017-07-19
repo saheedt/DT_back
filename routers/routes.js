@@ -13,7 +13,7 @@ exports.routes = (app) => {
 
 	//login routes
 	app.route('/api/createuser').post(controllers.createUser);
-	app.route('/api/login').post(/*controllers.login*/);
+	app.route('/api/login').post(controllers.login);
 	app.route('/api/createBackuser').post(controllers.createBackUser);
 	//app.route('/api/applogin').post(/*controllers.appLogin*/);
 
