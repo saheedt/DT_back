@@ -21,7 +21,7 @@
 		    <center><span> or </span></center>
 		    <select id ="categorySelect" name="categorySelect" class="form-control">
 	        	<option value=""> --Select Category-- </option>
-	        	<% if(category){ %>
+	        	<% if ((category) && (typeof(category) === "object")){ %>
 	        		<% category.forEach(function(cat){ %>
 	        			<option value = " <%= cat.categoryname %> "> <%= cat.categoryname %> </option>
 	        		<% }) %>
@@ -44,11 +44,12 @@
 		    <center><span> or </span></center>
 		    <select id ="levelSelect" name="levelSelect" class="form-control">
 	        	<option value=""> --Select Level-- </option>
-	        	<% if(level){ %>
+	        	<% if ((level) && (typeof(level) === "object")){ %>
 	        		<% level.forEach(function(lev){ %>
 	        			<option value = " <%= lev.levelname %> "> <%= lev.levelname %> </option>
 	        		<% }) %>
 	        	<% } %>
+	        	
 	        	<% if ((level) && (typeof(level) === "string")){ %>
 	        		<option value = " <%= level %> "> <%= level %> </option>
 

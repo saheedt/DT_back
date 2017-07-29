@@ -18,6 +18,9 @@ db.on('error', (err)=>{
 	console.log('database error', err);
 });
 
+
+
+//******* Helper functions *********
 const fetchCategories = () => {
 	return new Promise((resolve, reject) => {
 
@@ -97,20 +100,20 @@ exports.showLogin = (req, res) => {
 }
 
 exports.showHome = (req, res) => {
-	/*if(!req.session.user){
+	if(!req.session.user){
 		res.redirect('/');
 		return;
-	}*/
+	}
 	res.render('home', {
 		errors: ''
 	});
 }
 
 exports.showAdd = (req, res) => {
-	/*if(!req.session.user){
+	if(!req.session.user){
 		res.redirect('/');
 		return;
-	}*/
+	}
 	res.render('add', {
 		errors:'',
 		category: '',
@@ -125,9 +128,10 @@ exports.createUser = (req, res) => {
 	//db.users.
 	let errors;
 	req.checkBody('email', 'email is required.').notEmpty();
-	req.checkBody('email', 'email is required.').notEmpty();
+	req.checkBody('email', 'email is invalid.').isEmail();
 	req.checkBody('screenname', 'Screen Name is required.').notEmpty();
 	req.checkBody('password', 'Password is required.').notEmpty();
+	req.checkBody('password', 'Password should be between 8 to 30 characters.').len(8, 30);
 	req.checkBody('password_repeat', 'Password confirmation is required.').notEmpty();
 	req.checkBody('admin', 'You are not allowed here.').notEmpty();
 	req.checkBody('admin', 'You are not allowed this resource.').equals('0');
@@ -228,8 +232,10 @@ exports.login = (req, res) => {
 	console.log("password value: ", req.body.password);
 
 	errors = req.validationErrors();
+	console.log(errors);
 
 	if(errors){
+		console.log('error, reload page with err data..');
 		res.render('login', {
 			title: 'Sign In',
 			errors: errors
@@ -253,15 +259,15 @@ exports.login = (req, res) => {
 				});
 				return;
 			}else{
-				bcrypt.compare(req.body.password, doc.password, (err, res) => {
-					if(res){
+				bcrypt.compare(req.body.password, doc.password, (err, resp) => {
+					if(resp){
 						if(doc.admin == "1"){
 							req.session.user = doc;
 
-							/*res.render('home', {
+							res.render('home', {
 								errors: ''
-							});*/
-							res.redirect('/home');
+							});
+							//res.redirect('/home');
 							return;
 						}
 						if(doc.admin == "0"){
@@ -296,34 +302,20 @@ exports.login = (req, res) => {
 }
 
 exports.getCategory = (req, res) => {
-	/*db.category.find({}, {levels: 0}, (err, doc) => {
-		if(err){
-			res.render('add', {
-				//title: 'Add New Questions.',
-				errors: 'Error fetching categories, please reload page.'
-			});
-				return;
-		}
-
-		categories = doc;
-
-		res.render('add', {
-			//title: 'Add New Questions.',
-			errors: '',
-			category: categories
-		})
-	});*/
 
 	fetchCategories().then((doc) => {
-		console.log('getcategory: ', doc);
+
 		res.render('add', {
 			errors: '',
-			category: categories
-		});
+			category: categories,
+			level: ''
+		})
 	}, (err) => {
 		console.log('getcategory: ', err);
 		res.render('add', {
-			errors: 'Error fetching categories .'
+			category: '',
+			errors: 'Error fetching categories .',
+			level: ''
 		})
 	});
 
@@ -342,7 +334,8 @@ exports.createCategory = (req, res) => {
 	if (errors){
 		res.render('add', {
 			category: categories,
-			errors: errors
+			errors: errors,
+			level: ''
 		});
 		return;
 	}
@@ -350,7 +343,8 @@ exports.createCategory = (req, res) => {
 		if (doc) {
 			res.render('add', {
 				category: categories,
-				errors: 'Category Already Exists!!!'
+				errors: 'Category Already Exists!!!',
+				level: ''
 			});
 			return;
 		}
@@ -358,7 +352,8 @@ exports.createCategory = (req, res) => {
 		if (err) {
 			res.render('add', {
 				category: categories,
-				errors: err
+				errors: err,
+				level: ''
 			});
 			return;
 		}
@@ -372,7 +367,8 @@ exports.createCategory = (req, res) => {
 			if(err){
 				res.render('add', {
 					category: categories,
-					errors: 'Error creating new category, please try again.'
+					errors: 'Error creating new category, please try again.',
+					level: ''
 				});
 				return;
 			}
@@ -381,13 +377,16 @@ exports.createCategory = (req, res) => {
 				fetchCategories().then((doc) => {
 					console.log('create newCategory: ', doc);
 					res.render('add', {
+						category: categories,
 						errors: '',
-						category: categories
+						level: ''
 					});
 				}, (err) => {
 					console.log('create newCategory: ', err);
 					res.render('add', {
-						errors: 'Error fetching categories .'
+						category: categories,
+						errors: 'Error fetching categories .',
+						level: ''
 					});
 				}
 				);
@@ -431,7 +430,9 @@ exports.level = (req, res) => {
 	if (errors){
 		res.render('add', {
 			category: categories,
-			errors: errors
+			errors: errors,
+			level: levels
+
 		});
 		return;
 	}
@@ -448,7 +449,7 @@ exports.level = (req, res) => {
 		console.log("getLevel reject", err);
 		res.render('add', {
 			category: categories,
-			//level: levels,
+			level: levels,
 			errors: 'Error retrieving levels.'
 		});
 
@@ -467,7 +468,8 @@ exports.createLevel = (req, res) => {
 	if (errors){
 		res.render('add', {
 			category: categories,
-			errors: errors
+			errors: errors,
+			level: ''
 		});
 		return;
 	}

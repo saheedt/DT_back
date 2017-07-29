@@ -19,7 +19,8 @@
     "express": "4.15.3",
     "express-session": "1.15.3",
     "express-validator": "3.2.0",
-    "mongojs": "2.4.0"
+    "mongojs": "2.4.0",
+    "superagent": "3.5.2"
   },
   "engines": {
     "node": "8.0.0"
