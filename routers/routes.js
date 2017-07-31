@@ -20,7 +20,7 @@ exports.routes = (app) => {
 	//category routes
 	app.route('/api/createcategory').post(controllers.createCategory);
 	app.route('api/deletecategory').post(/*controllers.deletcategory*/);
-	app.route('/api/category').get(controllers.getCategory);
+	app.route('/api/category').post(controllers.getCategory);
 
 	//level routes
 	app.route('/api/createlevel').post(controllers.createLevel);

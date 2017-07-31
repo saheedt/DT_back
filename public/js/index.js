@@ -1,19 +1,32 @@
 window.addEventListener('load', ()=>{
 
 	const getCategory = () =>{
+		const catSelect = document.getElementById('categorySelect');
+		let categories = '';
 
-		const form = document.createElement("form");
-			  form.setAttribute("method", "get");
-			  form.setAttribute("action", '/api/category');
-
-		document.body.appendChild(form);
-		form.submit();
-		document.body.removeChild(form);
+		fetch("/api/category", {
+  		method: "POST",
+  		headers:{'Content-Type':'application/json'}
+		}).then((resp)=>{
+			resp.json().then((res) =>{
+				if(res.categories.length <= 0){
+					$(catSelect).empty();
+					$(catSelect).append("<option value=''> --Select Category-- </option>");
+					return;
+				}
+				$.each(res.categories, (idx, data)=>{
+					categories += `<option value=${data.categoryname} > ${data.categoryname} </option>`;
+				})
+				$(catSelect).append(categories);
+			})
+		});
+		
 	};
 
 	//**********Add page************
 	let newCategory = document.getElementById('newCat'),
 		categorySelect = document.getElementById('categorySelect');
+		levelSelect = document.getElementById('levelSelect');
 		newLevel = document.getElementById('newLev'),
 		question = document.getElementById('newQuestn'),
 		optionA = document.getElementById('optnA'),
@@ -34,56 +47,54 @@ window.addEventListener('load', ()=>{
 		getCategory();
 
 	categorySelect.addEventListener('change', (e)=>{
-		let category = {"category": categorySelect.value};
+		let category = {"category": categorySelect.value}, levels = '';
 
-		const form = document.createElement("form");
-			  form.setAttribute("method", "post");
-			  form.setAttribute("action", '/api/level');
-
-		const input = document.createElement('input');
-			  input.type = 'hidden';
-			  input.name = "category";
-			  input.value = category.category;
-
-		form.appendChild(input);
-		document.body.appendChild(form);
-		form.submit();
-		document.body.removeChild(form);
-		return false;
-		/*fetch(location.origin+"/api/level", {
+		fetch("api/level", {
   		method: "POST",
   		headers:{'Content-Type':'application/json'},
   		body: JSON.stringify(category)
-		});*/
+		}).then((resp)=>{
+			resp.json().then((res)=>{
+				if(res.levels.length <= 0){
+					$(levelSelect).empty();
+					$(levelSelect).append("<option value=''> --Select Level-- </option>");
+					return;
+				}
+				$(levelSelect).empty();
+				levels += "<option value=''> --Select Level-- </option>";
+				$.each(res.levels, (idx, data)=>{
+					levels += `<option value=${data} > ${data} </option>`;
+				})
+				$(levelSelect).append(levels);
+			})
+		});
 	});
 	}
 
 	//Add new category on category add button click.
 	if(newCategoryBtn){
 	newCategoryBtn.addEventListener('click', (e)=>{
+		console.log(newCategory.value);
 		let catData = {
 			"newCategory" : newCategory.value
-		};
-		const form = document.createElement("form");
-			  form.setAttribute("method", "post");
-			  form.setAttribute("action", '/api/createcategory');
+		}, categories = '';
 
-		const input = document.createElement('input');
-			  input.type = 'hidden';
-			  input.name = "newCategory";
-			  input.value = catData.newCategory;
-
-		form.appendChild(input);
-		document.body.appendChild(form);
-		form.submit();
-		document.body.removeChild(form);
-		return false;
-
-		/*fetch(location.origin+"/api/createcategory", {
+		fetch("/api/createcategory", {
   		method: "POST",
   		headers:{'Content-Type':'application/json'},
   		body: JSON.stringify(catData)
-		});*/
+		}).then((resp)=>{
+			resp.json().then((res)=>{
+				console.log('create cat resp: ', res);
+				$(categorySelect).empty();
+				categories += "<option value=''> --Select Category-- </option>";
+				$.each(res.categories, (idx, data)=>{
+					categories += `<option value=${data.categoryname} > ${data.categoryname} </option>`;
+				})
+				$(categorySelect).append(categories);
+				newCategory.value = '';
+			})
+		});
 	});
 	}
 
@@ -91,35 +102,24 @@ window.addEventListener('load', ()=>{
 	newLevelBtn.addEventListener('click', (e)=>{
 		let levdata = {
 			"category": categorySelect.value,
-			"levdata": newLevel.value
-		};
+			"newlevel": newLevel.value
+		}, levels = '';
 
-		const form = document.createElement("form");
-			  form.setAttribute("method", "post");
-			  form.setAttribute("action", '/api/createlevel');
-
-		const input = document.createElement('input');
-			  input.type = 'hidden';
-			  input.name = "category";
-			  input.value = levdata.category;
-
-		const input2 = document.createElement('input');
-			  input2.type = 'hidden';
-			  input2.name = "newlevel";
-			  input2.value = levdata.levdata;
-
-		form.appendChild(input);
-		form.appendChild(input2);
-		document.body.appendChild(form);
-		form.submit();
-		document.body.removeChild(form);
-		return false;
-
-		/*fetch(location.origin+"/api/createlevel", {
+		fetch("api/createlevel", {
   			method: "POST",
   			headers:{'Content-Type':'application/json'},
   			body: JSON.stringify(levdata)
-		});*/
+		}).then((resp)=>{
+			resp.json.then((res)=>{
+				$(levelSelect).empty();
+				levels += "<option value=''> --Select Level-- </option>";
+				$.each(res.levels, (idx, data)=>{
+					levels += `<option value=${data[idx]} > ${data[idx]} </option>`;
+				})
+				$(levelSelect).append(levels);
+				newLevel.value = '';
+			})
+		});
 	});
 	}
 

@@ -5,7 +5,7 @@ const mongojs = require('mongojs'),
       saltRounds = 10;
       require('dotenv').config();
 
-let categories, levels;
+let categories = [];
 //DB connection
 const db = mongojs(process.env.DBConnectString,
 	[process.env.UsersCollection, process.env.LeaderboardCollection, 
@@ -22,6 +22,7 @@ db.on('error', (err)=>{
 
 //******* Helper functions *********
 const fetchCategories = () => {
+	console.log('got called..');
 	return new Promise((resolve, reject) => {
 
 		db.category.find({}, {levels: 0}, (err, doc) => {
@@ -32,8 +33,32 @@ const fetchCategories = () => {
 			}
 
 			if(doc){
-				categories = doc;
-				resolve(doc);
+				let present;
+				if(categories.length <= 0){
+					doc.map((data)=>{categories.push(data)});
+					console.log('fetched cats on first iter: ', categories)
+					resolve(categories);
+					return;
+				}
+				doc.map((data, idx)=>{
+					console.log('doc map: ', idx, data)
+					present = false;
+					
+					
+				for(let i = 0; i < categories.length; i++){
+
+					if(data.categoryname === categories[i].categoryname){
+						present = true;
+						return;
+					}
+				}
+				if(present === false){
+					categories.push(data);
+				}
+
+				});
+				console.log('fetched cats: ', categories)
+				resolve(categories);
 				return;
 			}
 		});
@@ -43,6 +68,7 @@ const fetchCategories = () => {
 };
 
 const fetchLevelByCategory = (category) => {
+	let levelname = [];
 	return new Promise((resolve, reject) => {
 
 		db.category.findOne({"categoryname": category}, {levels: 1}, (err, doc) => {
@@ -53,8 +79,11 @@ const fetchLevelByCategory = (category) => {
 			}
 
 			if(doc){
-				levels = doc.levels;
-				resolve(doc.levels);
+				//levels = 
+				doc.levels.map((data, idx) => {
+					levelname.push(data.levelname);
+				});
+				resolve(levelname);
 				return;
 			}
 		});
@@ -69,7 +98,7 @@ const createLevelByCategory = (category, newLevel) => {
 	};
 
 	return new Promise((resolve, reject) => {
-		db.category.update({"categoryname": category}, { $push: { "levels": levelData}}, (err, doc) => {
+		db.category.update({"categoryname": category}, { $push: { levels: levelData}}, (err, doc) => {
 
 			if(err){
 				reject(err);
@@ -304,57 +333,52 @@ exports.login = (req, res) => {
 exports.getCategory = (req, res) => {
 
 	fetchCategories().then((doc) => {
+		console.log('from getCat: ', doc);
 
-		res.render('add', {
-			errors: '',
-			category: categories,
-			level: ''
-		})
+		res.send({categories: doc})
+
 	}, (err) => {
-		console.log('getcategory: ', err);
-		res.render('add', {
-			category: '',
-			errors: 'Error fetching categories .',
-			level: ''
-		})
+
+		res.send({error: 'error fetching categories'})
+
 	});
 
 }
 
 exports.createCategory = (req, res) => {
 	let errors, newCategory;
-	if(!req.session.user){
-		res.redirect('/');
-		return;
-	}
 
 	req.checkBody('newCategory', 'New category is required.').notEmpty();
 
 	errors = req.validationErrors();
 	if (errors){
-		res.render('add', {
+
+		res.send({error: errors});
+		/*render('add', {
 			category: categories,
 			errors: errors,
 			level: ''
-		});
+		});*/
 		return;
 	}
 	db.category.findOne({"categoryname": req.body.newCategory}, (err, doc) => {
 		if (doc) {
-			res.render('add', {
+			res.send({error: 'category already exists!!!'})
+			/*.render('add', {
 				category: categories,
 				errors: 'Category Already Exists!!!',
 				level: ''
-			});
+			});*/
 			return;
 		}
 
 		if (err) {
-			res.render('add', {
+			res.send({error: err})
+			/*.render('add', {
 				category: categories,
 				errors: err,
 				level: ''
-			});
+			});*/
 			return;
 		}
 
@@ -365,58 +389,35 @@ exports.createCategory = (req, res) => {
 
 		db.category.insert(newCategory, (err, result) => {
 			if(err){
-				res.render('add', {
+				res.send({error: 'error creating new category, please try again'})
+				/*.render('add', {
 					category: categories,
 					errors: 'Error creating new category, please try again.',
 					level: ''
-				});
+				});*/
 				return;
 			}
 
 			if(result){
 				fetchCategories().then((doc) => {
 					console.log('create newCategory: ', doc);
-					res.render('add', {
+					res.send({categories: doc})
+					/*render('add', {
 						category: categories,
 						errors: '',
 						level: ''
-					});
+					});*/
 				}, (err) => {
 					console.log('create newCategory: ', err);
-					res.render('add', {
+					res.send({error: 'error fetching categories' })
+					/*render('add', {
 						category: categories,
 						errors: 'Error fetching categories .',
 						level: ''
-					});
-				}
-				);
-
-			}
-			/*db.category.find({}, {levels: 0}, (err, doc) => {
-
-				let categoryDisplay = [] ;
-
-				if(err){
-					res.render('add', {
-						//title: 'Add New Questions.',
-						errors: 'Error fetching categories, please reload page.'
-					});
-					return;
-				}
-
-				doc.map((data)=>{
-					if(data.categoryname){
-						categoryDisplay.push(data.categoryname);
-					}
+					});*/
 				});
 
-				res.render('add', {
-					//title: 'Add New Questions.',
-					errors: '',
-					category: (categoryDisplay.length > 1) ? categoryDisplay : (categoryDisplay.length === 1) ? categoryDisplay[0] : (categoryDisplay.length == 0) ? ''
-					level: doc.
-				})
-			});*/
+			}
 		});
 	});
 }
@@ -428,30 +429,31 @@ exports.level = (req, res) => {
 	errors = req.validationErrors();
 
 	if (errors){
-		res.render('add', {
+		res.send({error: errors})
+		/*render('add', {
 			category: categories,
 			errors: errors,
 			level: levels
 
-		});
+		});*/
 		return;
 	}
 
-	fetchLevelByCategory(req.body.category).then((level)=>{
-		console.log("getLevel resolve", levels);
-		res.render('add', {
+	fetchLevelByCategory(req.body.category).then((levels)=>{
+		//console.log("getLevel resolve", levels);
+		res.send({levels: levels})/*render('add', {
 			category: categories,
 			level: levels,
 			errors: ''
-		});
+		});*/
 
 	}, (err)=>{
 		console.log("getLevel reject", err);
-		res.render('add', {
+		res.send({error: 'error retrieving levels'})/*render('add', {
 			category: categories,
 			level: levels,
 			errors: 'Error retrieving levels.'
-		});
+		});*/
 
 	});
 
@@ -466,11 +468,12 @@ exports.createLevel = (req, res) => {
 	errors = req.validationErrors();
 
 	if (errors){
-		res.render('add', {
+		res.send({error: errors})
+		/*render('add', {
 			category: categories,
 			errors: errors,
 			level: ''
-		});
+		});*/
 		return;
 	}
 
@@ -478,28 +481,31 @@ exports.createLevel = (req, res) => {
 
 		fetchLevelByCategory(req.body.category).then((doc)=>{
 			console.log("getLevel in createLevelByCategory resolve", levels);
-			res.render('add', {
+			res.send({levels: levels})
+			/*render('add', {
 				category: categories,
 				level: levels,
 				errors: ''
-			});
+			});*/
 
 		}, (err)=>{
 			console.log("getLevel in createLevelByCategory reject", err);
-			res.render('add', {
+			res.send({error: 'error updating levels list'})
+			/*render('add', {
 				category: categories,
 				level: levels,
 				errors: 'Error updating levels list.'
-			});
+			});*/
 
 		});
 	}, (err)=>{
 		console.log("createLevelByCategory reject", err);
-		res.render('add', {
+		res.send({error: 'error creating new level in category'})
+		/*render('add', {
 			category: categories,
 			level: levels,
 			errors: 'Error creating new level in category.'
-		});
+		});*/
 	});
 }
 

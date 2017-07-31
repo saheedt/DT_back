@@ -21,19 +21,7 @@
 		    <center><span> or </span></center>
 		    <select id ="categorySelect" name="categorySelect" class="form-control">
 	        	<option value=""> --Select Category-- </option>
-	        	<% if ((category) && (typeof(category) === "object")){ %>
-	        		<% category.forEach(function(cat){ %>
-	        			<option value = " <%= cat.categoryname %> "> <%= cat.categoryname %> </option>
-	        		<% }) %>
-	        	<% } %>
-	        	<% if ((category) && (typeof(category) === "string")){ %>
-	        		<option value = " <%= category %> "> <%= category %> </option>
-
-	        		<!---to delete-->
-					<!--<ul>
-						<li><%= category %></li>
-					</ul>-->
-				<% } %>
+	        	
 
 	        </select>
 		</div><br>
