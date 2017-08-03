@@ -10,14 +10,18 @@ window.addEventListener('load', ()=>{
 		}).then((resp)=>{
 			resp.json().then((res) =>{
 				if(res.categories.length <= 0){
+					catSelect.disabled = true;
 					$(catSelect).empty();
 					$(catSelect).append("<option value=''> --Select Category-- </option>");
+					catSelect.disabled = false;
 					return;
 				}
+				catSelect.disabled = true;
 				$.each(res.categories, (idx, data)=>{
 					categories += `<option value=${data.categoryname} > ${data.categoryname} </option>`;
 				})
 				$(catSelect).append(categories);
+				catSelect.disabled = false;
 			})
 		});
 		
@@ -56,16 +60,20 @@ window.addEventListener('load', ()=>{
 		}).then((resp)=>{
 			resp.json().then((res)=>{
 				if(res.levels.length <= 0){
+					levelSelect.disabled = true;
 					$(levelSelect).empty();
 					$(levelSelect).append("<option value=''> --Select Level-- </option>");
+					levelSelect.disabled = false;
 					return;
 				}
+				levelSelect.disabled = true;
 				$(levelSelect).empty();
 				levels += "<option value=''> --Select Level-- </option>";
 				$.each(res.levels, (idx, data)=>{
 					levels += `<option value=${data} > ${data} </option>`;
 				})
 				$(levelSelect).append(levels);
+				levelSelect.disabled = false;
 			})
 		});
 	});
@@ -74,7 +82,6 @@ window.addEventListener('load', ()=>{
 	//Add new category on category add button click.
 	if(newCategoryBtn){
 	newCategoryBtn.addEventListener('click', (e)=>{
-		console.log(newCategory.value);
 		let catData = {
 			"newCategory" : newCategory.value
 		}, categories = '';
@@ -85,7 +92,7 @@ window.addEventListener('load', ()=>{
   		body: JSON.stringify(catData)
 		}).then((resp)=>{
 			resp.json().then((res)=>{
-				console.log('create cat resp: ', res);
+				newCategory.disabled = true
 				$(categorySelect).empty();
 				categories += "<option value=''> --Select Category-- </option>";
 				$.each(res.categories, (idx, data)=>{
@@ -93,6 +100,7 @@ window.addEventListener('load', ()=>{
 				})
 				$(categorySelect).append(categories);
 				newCategory.value = '';
+				newCategory.disabled = false;
 			})
 		});
 	});
@@ -110,14 +118,16 @@ window.addEventListener('load', ()=>{
   			headers:{'Content-Type':'application/json'},
   			body: JSON.stringify(levdata)
 		}).then((resp)=>{
-			resp.json.then((res)=>{
+			resp.json().then((res)=>{
+				newLevel.disabled = true;
 				$(levelSelect).empty();
 				levels += "<option value=''> --Select Level-- </option>";
 				$.each(res.levels, (idx, data)=>{
-					levels += `<option value=${data[idx]} > ${data[idx]} </option>`;
+					levels += `<option value=${data} > ${data} </option>`;
 				})
 				$(levelSelect).append(levels);
 				newLevel.value = '';
+				newLevel.disabled = false;
 			})
 		});
 	});
@@ -172,18 +182,6 @@ window.addEventListener('load', ()=>{
 			});*/
 		});
 		}
-
-
-let insertedNodes = [];
-const observer = new MutationObserver(function(mutations) {
- mutations.forEach(function(mutation) {
-   for (var i = 0; i < mutation.addedNodes.length; i++)
-     insertedNodes.push(mutation.addedNodes[i]);
- })
-});
-observer.observe(document, { attributes: true, childList: true, characterData: true  });
-console.log(insertedNodes);
-
 
 });
 
