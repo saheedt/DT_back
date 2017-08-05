@@ -28,7 +28,7 @@ exports.routes = (app) => {
 	app.route('/api/level').post(controllers.level);
 
 	//question routes
-	app.route('/api/createquestion').post(/*controllers.createQuestion*/);
+	app.route('/api/createquestion').post(controllers.createQuestion);
 	app.route('/api/deletequestion').post(/*controllers.getQuestions*/);
 	app.route('/api/deletequestion').post(/*controllers.deleteQuestion*/);
 

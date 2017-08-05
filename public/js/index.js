@@ -1,5 +1,4 @@
 window.addEventListener('load', ()=>{
-
 	const getCategory = () =>{
 		const catSelect = document.getElementById('categorySelect');
 		let categories = '';
@@ -141,46 +140,68 @@ window.addEventListener('load', ()=>{
 		loginPassword = document.getElementById('loginPassword');
 
 		if(loginform){
-		loginform.addEventListener('submit', (e) => {
-			e.preventDefault();
-			console.log('login command got called in index.js..');
-			let logindata = {
-				"email": loginEmail.value,
-				"password": loginPassword.value
+			loginform.addEventListener('submit', (e) => {
+				e.preventDefault();
+				console.log('login command got called in index.js..');
+				let logindata = {
+					"email": loginEmail.value,
+					"password": loginPassword.value
+				}
+				console.log(logindata);
+
+				const form = document.createElement("form");
+			  		form.setAttribute("method", "post");
+			  		form.setAttribute("action", '/api/login');
+
+				const input = document.createElement('input');
+			  		input.type = 'hidden';
+			  		input.name = "email";
+			  		input.value = logindata.email;
+
+				const input2 = document.createElement('input');
+			  		input2.type = 'hidden';
+			  		input2.name = "password";
+			  		input2.value = logindata.password;
+
+				form.appendChild(input);
+				form.appendChild(input2);
+				document.body.appendChild(form);
+				form.submit();
+				document.body.removeChild(form);
+				return false;
+			});
+		}
+
+
+		if(submitQuestionBtn){
+			//newQuestn //optnA //optnB //optnC //optnD //answer
+			let questionObject = {
+				category: categorySelect.value,
+				level: levelSelect.value,
+				question: question.value,
+				optionA: optionA.value,
+				optionB: optionB.value,
+				optionC: optionC.value,
+				optionD: optionD.value,
+				answer: answer.value
 			}
-			console.log(logindata);
-
-			const form = document.createElement("form");
-			  form.setAttribute("method", "post");
-			  form.setAttribute("action", '/api/login');
-
-			const input = document.createElement('input');
-			  input.type = 'hidden';
-			  input.name = "email";
-			  input.value = logindata.email;
-
-			const input2 = document.createElement('input');
-			  input2.type = 'hidden';
-			  input2.name = "password";
-			  input2.value = logindata.password;
-
-			form.appendChild(input);
-			form.appendChild(input2);
-			document.body.appendChild(form);
-			form.submit();
-			document.body.removeChild(form);
-			return false;
-
-			/*fetch(location.origin+'/api/login',{
-				method: 'POST',
-				//headers: {'Content-Type': 'application/json'},
-				body: JSON.stringify(logindata)
-			}).then((response) =>{
-				return response.json();
-			}).then((resp) => {
-				console.log(resp)
-			});*/
-		});
+			submitQuestionBtn.addEventListener('click', (e)=>{
+				fetch("/api/createquestion", {
+					method: "POST",
+  					headers:{'Content-Type':'application/json'},
+  					body: JSON.stringify(questionObject)
+				}).then((resp) => {
+					resp.json().then((res) => {
+						question.value = '';
+						optionA.value = '';
+						optionB.value = '';
+						optionC.value = '';
+						optionD.value = '';
+						answer.value = '';
+					});
+				});
+			})
+		//});
 		}
 
 });

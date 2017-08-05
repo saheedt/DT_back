@@ -1,4 +1,5 @@
 'use strict';
+
 const bcrypt = require('bcrypt'),
       saltRounds = 10,
       utils = require('../utils/utils.js');
@@ -324,6 +325,41 @@ exports.createLevel = (req, res) => {
 
 	}, (err)=>{
 		res.send({error: 'error creating new level in category'})
+	})
+}
+
+exports.createQuestion = (req, res) => {
+	let errors, questionObject;
+	req.checkBody('category', 'category is required.').notEmpty();
+	req.checkBody('level', 'level is required.').notEmpty();
+	req.checkBody('question', 'question is required.').notEmpty();
+	req.checkBody('optionA', 'option a is required.').notEmpty();
+	req.checkBody('optionB', 'option b is required.').notEmpty();
+	req.checkBody('optionC', 'option c is required.').notEmpty();
+	req.checkBody('optionD', 'option d is required.').notEmpty();
+	req.checkBody('answer', 'answer is required.').notEmpty();
+
+	errors = req.validationErrors();
+
+	if(errors){
+		res.send({error: errors})
+		return;
+	}
+
+	questionObject = {
+		category : req.body.category,
+		level: req.body.level,
+		question: req.body.question,
+		optionA: req.body.optionA,
+		optionB: req.body.optionB,
+		optionC: req.body.optionC,
+		optionD: req.body.optionD,
+		answer: req.body.answer
+	}
+	utils.createQuestionByCategoryLevel(questionObject).then((question) =>{
+		console.log(question)
+	}, (err) =>{
+		res.send({error: 'error creating new question'})
 	})
 }
 

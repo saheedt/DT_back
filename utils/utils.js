@@ -1,6 +1,7 @@
 'use strict';
 
-const mongojs = require('mongojs');
+const mongojs = require('mongojs'),
+	  uuidv4 = require('uuid/v4');
       require('dotenv').config();
 
 let categories = [];
@@ -112,3 +113,33 @@ exports.createLevelByCategory = (category, newLevel) => {
 
 	});
 };
+
+exports.createQuestionByCategoryLevel = (questionObject) =>{
+	let uuid = uuidv4().split("-")[0],
+		levsplit = questionObject.level.split(' '),
+		questionId = `${questionObject.category.substr(0,3)}${levsplit[0].substr(0,3)}${levsplit[1]}-${uuid}`;
+
+	let questionObj = {
+		question: questionObject.question,
+		optionA: questionObject.optionA,
+		optionB: questionObject.optionB,
+		optionC: questionObject.optionC,
+		optionD: questionObject.optionD,
+		answer: questionObject.answer,
+		questionId: questionId
+	}
+
+	return new Promise((resolve, reject) => {
+		db.category.update({"categoryname": questionObject.category}, {$push: {levels/questionObject.level/questions: questionObj}}, (err,doc) => {
+			if(err){
+				reject(err);
+				return;
+			}
+
+			if(doc){
+				resolve(doc);
+				return;
+			}
+		})
+	});
+}
