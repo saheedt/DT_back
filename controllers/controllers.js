@@ -355,11 +355,14 @@ exports.createQuestion = (req, res) => {
 		optionC: req.body.optionC,
 		optionD: req.body.optionD,
 		answer: req.body.answer
-	}
+	};
 	utils.createQuestionByCategoryLevel(questionObject).then((question) =>{
-		console.log(question)
+		res.send({pass: "question created"})
 	}, (err) =>{
 		res.send({error: 'error creating new question'})
 	})
 }
 
+exports.getQuestions = (req, res) => {
+	
+}

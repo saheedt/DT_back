@@ -8,19 +8,27 @@ window.addEventListener('load', ()=>{
   		headers:{'Content-Type':'application/json'}
 		}).then((resp)=>{
 			resp.json().then((res) =>{
-				if(res.categories.length <= 0){
+				if(res.categories){
+					if(res.categories.length <= 0){
+						catSelect.disabled = true;
+						$(catSelect).empty();
+						$(catSelect).append("<option value=''> --Select Category-- </option>");
+						catSelect.disabled = false;
+						return;
+					}
 					catSelect.disabled = true;
-					$(catSelect).empty();
-					$(catSelect).append("<option value=''> --Select Category-- </option>");
+					$.each(res.categories, (idx, data)=>{
+						categories += `<option value=${data.categoryname} > ${data.categoryname} </option>`;
+					})
+					$(catSelect).append(categories);
 					catSelect.disabled = false;
 					return;
 				}
-				catSelect.disabled = true;
-				$.each(res.categories, (idx, data)=>{
-					categories += `<option value=${data.categoryname} > ${data.categoryname} </option>`;
-				})
-				$(catSelect).append(categories);
-				catSelect.disabled = false;
+				if(res.error){
+					//TODO: Handle error
+				}
+				
+				
 			})
 		});
 		
@@ -58,21 +66,28 @@ window.addEventListener('load', ()=>{
   		body: JSON.stringify(category)
 		}).then((resp)=>{
 			resp.json().then((res)=>{
-				if(res.levels.length <= 0){
+				if(res.levels){
+					if(res.levels.length <= 0){
+						levelSelect.disabled = true;
+						$(levelSelect).empty();
+						$(levelSelect).append("<option value=''> --Select Level-- </option>");
+						levelSelect.disabled = false;
+						return;
+					}
 					levelSelect.disabled = true;
 					$(levelSelect).empty();
-					$(levelSelect).append("<option value=''> --Select Level-- </option>");
+					levels += "<option value=''> --Select Level-- </option>";
+					$.each(res.levels, (idx, data)=>{
+						let show = data.split('_').join(' ');
+						levels += `<option value=${data} > ${show} </option>`;
+					})
+					$(levelSelect).append(levels);
 					levelSelect.disabled = false;
 					return;
 				}
-				levelSelect.disabled = true;
-				$(levelSelect).empty();
-				levels += "<option value=''> --Select Level-- </option>";
-				$.each(res.levels, (idx, data)=>{
-					levels += `<option value=${data} > ${data} </option>`;
-				})
-				$(levelSelect).append(levels);
-				levelSelect.disabled = false;
+				if(res.error){
+					//TODO: Handle error
+				}
 			})
 		});
 	});
@@ -91,15 +106,22 @@ window.addEventListener('load', ()=>{
   		body: JSON.stringify(catData)
 		}).then((resp)=>{
 			resp.json().then((res)=>{
-				newCategory.disabled = true
-				$(categorySelect).empty();
-				categories += "<option value=''> --Select Category-- </option>";
-				$.each(res.categories, (idx, data)=>{
-					categories += `<option value=${data.categoryname} > ${data.categoryname} </option>`;
-				})
-				$(categorySelect).append(categories);
-				newCategory.value = '';
-				newCategory.disabled = false;
+				if(res.categories){
+					newCategory.disabled = true
+					$(categorySelect).empty();
+					categories += "<option value=''> --Select Category-- </option>";
+					$.each(res.categories, (idx, data)=>{
+						categories += `<option value=${data.categoryname} > ${data.categoryname} </option>`;
+					})
+					$(categorySelect).append(categories);
+					newCategory.value = '';
+					newCategory.disabled = false;
+					return;
+				}
+				if(res.error){
+					//TODO: Handle error
+				}
+				
 			})
 		});
 	});
@@ -117,19 +139,65 @@ window.addEventListener('load', ()=>{
   			headers:{'Content-Type':'application/json'},
   			body: JSON.stringify(levdata)
 		}).then((resp)=>{
-			resp.json().then((res)=>{
-				newLevel.disabled = true;
-				$(levelSelect).empty();
-				levels += "<option value=''> --Select Level-- </option>";
-				$.each(res.levels, (idx, data)=>{
-					levels += `<option value=${data} > ${data} </option>`;
-				})
-				$(levelSelect).append(levels);
-				newLevel.value = '';
-				newLevel.disabled = false;
+			resp.json().then((res)=>{			
+				if(res.levels){
+					newLevel.disabled = true;
+					$(levelSelect).empty();
+					levels += "<option value=''> --Select Level-- </option>";
+					$.each(res.levels, (idx, data)=>{
+						let show = data.split('_').join(' ');
+						levels += `<option value=${data} > ${show} </option>`;
+					})
+					$(levelSelect).append(levels);
+					newLevel.value = '';
+					newLevel.disabled = false;
+					return;
+				}
+				if(res.error){
+					//TODO: Handle error
+				}
+				
 			})
 		});
 	});
+	}
+
+	if(submitQuestionBtn){
+			//newQuestn //optnA //optnB //optnC //optnD //answer
+			submitQuestionBtn.addEventListener('click', (e)=>{
+
+				let questionObject = {
+					category: categorySelect.value,
+					level: levelSelect.value,
+					question: question.value,
+					optionA: optionA.value,
+					optionB: optionB.value,
+					optionC: optionC.value,
+					optionD: optionD.value,
+					answer: answer.value
+				};
+				console.log(questionObject);
+
+				fetch("/api/createquestion", {
+					method: "POST",
+  					headers:{'Content-Type':'application/json'},
+  					body: JSON.stringify(questionObject)
+				}).then((resp) => {
+					resp.json().then((res) => {
+						console.log(res);
+						if(res.pass == "question created"){
+							question.value = '';
+							optionA.value = '';
+							optionB.value = '';
+							optionC.value = '';
+							optionD.value = '';
+							answer.value = '';
+						}
+						
+					});
+				});
+			})
+		//});
 	}
 
 
@@ -170,38 +238,6 @@ window.addEventListener('load', ()=>{
 				document.body.removeChild(form);
 				return false;
 			});
-		}
-
-
-		if(submitQuestionBtn){
-			//newQuestn //optnA //optnB //optnC //optnD //answer
-			let questionObject = {
-				category: categorySelect.value,
-				level: levelSelect.value,
-				question: question.value,
-				optionA: optionA.value,
-				optionB: optionB.value,
-				optionC: optionC.value,
-				optionD: optionD.value,
-				answer: answer.value
-			}
-			submitQuestionBtn.addEventListener('click', (e)=>{
-				fetch("/api/createquestion", {
-					method: "POST",
-  					headers:{'Content-Type':'application/json'},
-  					body: JSON.stringify(questionObject)
-				}).then((resp) => {
-					resp.json().then((res) => {
-						question.value = '';
-						optionA.value = '';
-						optionB.value = '';
-						optionC.value = '';
-						optionD.value = '';
-						answer.value = '';
-					});
-				});
-			})
-		//});
 		}
 
 });
