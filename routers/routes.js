@@ -7,7 +7,8 @@ exports.routes = (app) => {
 	//View routes..
 	app.route('/').get(controllers.showLogin);
 	app.route('/home').get(controllers.showHome);
-	app.route('/add').get(controllers.showAdd)
+	app.route('/add').get(controllers.showAdd);
+	app.route('/edit').get(controllers.showEdit);
 
 	//DB routes..
 

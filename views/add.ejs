@@ -15,14 +15,13 @@
 			</ul>
 		<% } %>
 
+		<div id="errorContainer"></div>
 		<div class="divider"></div><br>
 		<div class="form-group">
 		    <input type="text" class="inputNew" name="newCategory" id="newCat" placeholder="Add New Category"><button id="newCatBtn" class="addNew">ADD</button>
 		    <center><span> or </span></center>
 		    <select id ="categorySelect" name="categorySelect" class="form-control">
-	        	<option value=""> --Select Category-- </option>
-	        	
-
+	        	<option value=""> --Select Category-- </option>	        	
 	        </select>
 		</div><br>
 		<div class="divider"></div><br>
@@ -32,21 +31,6 @@
 		    <center><span> or </span></center>
 		    <select id ="levelSelect" name="levelSelect" class="form-control">
 	        	<option value=""> --Select Level-- </option>
-	        	<% if ((level) && (typeof(level) === "object")){ %>
-	        		<% level.forEach(function(lev){ %>
-	        			<option value = " <%= lev.levelname %> "> <%= lev.levelname %> </option>
-	        		<% }) %>
-	        	<% } %>
-	        	
-	        	<% if ((level) && (typeof(level) === "string")){ %>
-	        		<option value = " <%= level %> "> <%= level %> </option>
-
-	        		<!---to delete-->
-					<!--<ul>
-						<li><%= level %></li>
-					</ul>-->		
-				<% } %>
-
 	        </select>
 		</div><br>
 		<div class="divider"></div><br>

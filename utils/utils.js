@@ -21,7 +21,7 @@ db.on('error', (err)=>{
 
 //******* Helper functions *********
 exports.fetchCategories = () => {
-	console.log('got called..');
+
 	return new Promise((resolve, reject) => {
 
 		db.category.find({}, {levels: 0}, (err, doc) => {
@@ -35,12 +35,12 @@ exports.fetchCategories = () => {
 				let present;
 				if(categories.length <= 0){
 					doc.map((data)=>{categories.push(data)});
-					console.log('fetched cats on first iter: ', categories)
+					
 					resolve(categories);
 					return;
 				}
 				doc.map((data, idx)=>{
-					console.log('doc map: ', idx, data)
+					
 					present = false;
 					
 					
@@ -56,7 +56,7 @@ exports.fetchCategories = () => {
 				}
 
 				});
-				console.log('fetched cats: ', categories)
+				
 				resolve(categories);
 				return;
 			}
@@ -114,7 +114,7 @@ exports.createLevelByCategory = (category, newLevel) => {
 	});
 };
 
-exports.createQuestionByCategoryLevel = (questionObject) =>{
+exports.createQuestionByCategoryLevel = (questionObject) => {
 	let uuid = uuidv4().split("-")[0],
 		levsplit = questionObject.level.split('_'),
 		questionId = `${questionObject.category.substr(0,3)}${levsplit[0].substr(0,3)}${levsplit[1]}-${uuid}`;
@@ -143,4 +143,30 @@ exports.createQuestionByCategoryLevel = (questionObject) =>{
 				}
 			});
 	});
+}
+
+exports.getQuestionByCategoryLevel = (getQuestionObject) => {
+	let output = [];
+
+	return new Promise((resolve, reject) => {
+		db.category.findOne({ categoryname: getQuestionObject.category, 'levels.levelname': getQuestionObject.level }, { _id: 0, categoryname: 0},
+			(err, doc) =>{
+				if(err){
+					reject(err);
+					return;
+				}
+
+				if(doc){
+					doc.levels.map((data, idx)=>{
+						if(data.levelname == getQuestionObject.level){
+							return output.push(data);
+						}
+					});
+					resolve(output);
+					return;
+				}
+
+		});
+	});
+
 }

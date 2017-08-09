@@ -1,4 +1,6 @@
 window.addEventListener('load', ()=>{
+	
+	const errorDisplay = document.getElementById('errorContainer');
 	const getCategory = () =>{
 		const catSelect = document.getElementById('categorySelect');
 		let categories = '';
@@ -26,6 +28,7 @@ window.addEventListener('load', ()=>{
 				}
 				if(res.error){
 					//TODO: Handle error
+					errorDisplay.innerHTML = res.error;
 				}
 				
 				
@@ -34,7 +37,7 @@ window.addEventListener('load', ()=>{
 		
 	};
 
-	//**********Add page************
+	//**********Add and edit page************
 	let newCategory = document.getElementById('newCat'),
 		categorySelect = document.getElementById('categorySelect');
 		levelSelect = document.getElementById('levelSelect');
@@ -44,7 +47,9 @@ window.addEventListener('load', ()=>{
 		optionB = document.getElementById('optnB'),
 		optionC = document.getElementById('optnC'),
 		optionD = document.getElementById('optnD'),
-		answer = document.getElementById('answer');
+		answer = document.getElementById('answer'),
+		pullQuestions = document.getElementById('pullQuestionsBtn');
+
 
 
 	let newCategoryBtn = document.getElementById('newCatBtn'),
@@ -58,7 +63,14 @@ window.addEventListener('load', ()=>{
 		getCategory();
 
 	categorySelect.addEventListener('change', (e)=>{
+
+		if(categorySelect.value == '' || categorySelect.value == ' '){
+			errorDisplay.innerHTML = 'select valid category';
+			return;
+		}
+
 		let category = {"category": categorySelect.value}, levels = '';
+		errorDisplay.innerHTML = '';
 
 		fetch("api/level", {
   		method: "POST",
@@ -87,6 +99,7 @@ window.addEventListener('load', ()=>{
 				}
 				if(res.error){
 					//TODO: Handle error
+					errorDisplay.innerHTML = res.error;
 				}
 			})
 		});
@@ -95,10 +108,21 @@ window.addEventListener('load', ()=>{
 
 	//Add new category on category add button click.
 	if(newCategoryBtn){
+		document.getElementById('headerAddBtn').style.display = 'none';
+
 	newCategoryBtn.addEventListener('click', (e)=>{
+
+		if(newCategory.value == '' || newCategory.value == ' '){
+			errorDisplay.innerHTML = 'come on, do better with the category name!';
+			//$('#errorContainer').html('come on, do better with the category name!');
+			return;
+		}
+
 		let catData = {
 			"newCategory" : newCategory.value
 		}, categories = '';
+
+		errorDisplay.innerHTML = '';
 
 		fetch("/api/createcategory", {
   		method: "POST",
@@ -120,6 +144,7 @@ window.addEventListener('load', ()=>{
 				}
 				if(res.error){
 					//TODO: Handle error
+					errorDisplay.innerHTML = res.error;
 				}
 				
 			})
@@ -129,10 +154,20 @@ window.addEventListener('load', ()=>{
 
 	if(newLevelBtn){
 	newLevelBtn.addEventListener('click', (e)=>{
+		if(categorySelect.value == '' || categorySelect.value == ' '){
+			errorDisplay.innerHTML = 'check selected category bruh!';
+			return;
+		}
+		if(newLevel.value == '' || newLevel.value == ' '){
+			errorDisplay.innerHTML = 'come on, do better with the level name!';
+			return;
+		}
 		let levdata = {
 			"category": categorySelect.value,
 			"newlevel": newLevel.value
 		}, levels = '';
+
+		errorDisplay.innerHTML = '';
 
 		fetch("api/createlevel", {
   			method: "POST",
@@ -155,6 +190,7 @@ window.addEventListener('load', ()=>{
 				}
 				if(res.error){
 					//TODO: Handle error
+					errorDisplay.innerHTML = res.error;
 				}
 				
 			})
@@ -162,9 +198,27 @@ window.addEventListener('load', ()=>{
 	});
 	}
 
+	if(levelSelect){
+		levelSelect.addEventListener('change', (e)=>{
+			if(levelSelect.value == '' || levelSelect.value == ' '){
+				errorDisplay.innerHTML = 'check selected level bruh!'
+				return;
+			}
+			errorDisplay.innerHTML = '';
+		});
+	}
+
 	if(submitQuestionBtn){
 			//newQuestn //optnA //optnB //optnC //optnD //answer
 			submitQuestionBtn.addEventListener('click', (e)=>{
+				if(categorySelect.value == '' || categorySelect.value == ' ' || levelSelect.value == '' || levelSelect.value == ' '
+					|| question.value == '' || question.value == ' ' || optionA.value == '' || optionA.value == ' ' || optionB.value == '' 
+					|| optionB.value == ' ' || optionC.value == '' || optionC.value == ' ' || optionD.value == '' || optionD.value == ' '
+					|| answer.value == '' || answer.value == ' '){
+
+					errorDisplay.innerHTML = 'bruhh!! walk your way up to spot your wrong doing';
+					return;
+				}
 
 				let questionObject = {
 					category: categorySelect.value,
@@ -176,7 +230,7 @@ window.addEventListener('load', ()=>{
 					optionD: optionD.value,
 					answer: answer.value
 				};
-				console.log(questionObject);
+				errorDisplay.innerHTML = '';
 
 				fetch("/api/createquestion", {
 					method: "POST",
@@ -184,7 +238,7 @@ window.addEventListener('load', ()=>{
   					body: JSON.stringify(questionObject)
 				}).then((resp) => {
 					resp.json().then((res) => {
-						console.log(res);
+						//console.log(res);
 						if(res.pass == "question created"){
 							question.value = '';
 							optionA.value = '';
@@ -192,12 +246,65 @@ window.addEventListener('load', ()=>{
 							optionC.value = '';
 							optionD.value = '';
 							answer.value = '';
+							return;
+						}
+						if(res.error){
+							errorDisplay.innerHTML = res.error;
+							return;
 						}
 						
 					});
 				});
 			})
 		//});
+	}
+
+	if(pullQuestions){
+		
+		pullQuestions.addEventListener('click', (e)=>{
+			let questionObj, tableData = '' /*, questionTable = document.getElementById('questionTable')*/;
+			if(categorySelect.value == '' || categorySelect.value == ' '){
+				errorDisplay.innerHTML = 'check selected category bruh';
+				return;
+			}
+			if(levelSelect.value == '' || levelSelect.value == ' '){
+				errorDisplay.innerHTML = 'check selected level bruh';
+				return;
+			}
+			questionObj = {
+				category: categorySelect.value,
+				level: levelSelect.value
+			};
+			fetch("api/question", {
+				method: "POST",
+				headers:{'Content-Type':'application/json'},
+				body: JSON.stringify(questionObj)
+			}).then((resp) =>{
+				resp.json().then((res)=>{
+					if(res.questions){
+						res.questions[0].questions.map((data, idx) =>{
+							tableData += `<tr>
+							<td><input type="text" class="" id="question-${idx}" value="${data.question}" disabled></td>
+							<td><input type="text" class="" id="optnA-${idx}" value="${data.optionA}" disabled></td>
+							<td><input type="text" class="" id="optnB-${idx}" value="${data.optionB}" disabled></td>
+							<td><input type="text" class="" id="optnC-${idx}" value="${data.optionC}" disabled></td>
+							<td><input type="text" class="" id="optnD-${idx}" value="${data.optionD}" disabled></td>
+							<td><input type="text" class="" id="answer-${idx}" value="${data.answer}" disabled></td>
+							<td><button id="editBtn-${idx}" onClick="editBtnClickHandler()">EDIT</button></td>
+							<td><button id="updateBtn-${idx}" disabled>UPDATE</button></td>
+							</tr>`
+						});
+						$('#questionTable').append(tableData);
+						console.log(res.questions[0].questions);
+
+					}
+					if(res.error){
+						errorDisplay.innerHTML = res.error;
+						return;
+					}
+				});
+			})
+		});
 	}
 
 
@@ -215,7 +322,6 @@ window.addEventListener('load', ()=>{
 					"email": loginEmail.value,
 					"password": loginPassword.value
 				}
-				console.log(logindata);
 
 				const form = document.createElement("form");
 			  		form.setAttribute("method", "post");
@@ -239,6 +345,17 @@ window.addEventListener('load', ()=>{
 				return false;
 			});
 		}
+
+		if(document.getElementById('homeBtnContainer')){
+			document.getElementById('headerHomeBtn').style.display = 'none';
+			document.getElementById('headerAddBtn').style.display = 'none';
+			document.getElementById('headerEditBtn').style.display = 'none';
+			return;
+		}
+	function editBtnClickHandler(e){
+		let x = e.target.id;/*|| $(this).id*/;
+		console.log(x);
+	}
 
 });
 

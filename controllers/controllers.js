@@ -39,6 +39,14 @@ exports.showAdd = (req, res) => {
 	});
 }
 
+exports.showEdit = (req, res) => {
+	if(!req.session.user){
+		res.redirect('/');
+		return;
+	}
+	res.render('edit');
+}
+
 
 //*********api routes****************
 
@@ -153,7 +161,6 @@ exports.login = (req, res) => {
 	console.log(errors);
 
 	if(errors){
-		console.log('error, reload page with err data..');
 		res.render('login', {
 			title: 'Sign In',
 			errors: errors
@@ -222,7 +229,6 @@ exports.login = (req, res) => {
 exports.getCategory = (req, res) => {
 
 	utils.fetchCategories().then((doc) => {
-		console.log('from getCat: ', doc);
 
 		res.send({categories: doc})
 
@@ -268,7 +274,7 @@ exports.createCategory = (req, res) => {
 
 			if(result){
 				utils.fetchCategories().then((doc) => {
-					console.log('create newCategory: ', doc);
+
 					res.send({categories: doc})
 				}, (err) => {
 					console.log('create newCategory: ', err);
@@ -292,7 +298,7 @@ exports.level = (req, res) => {
 	}
 
 	utils.fetchLevelByCategory(req.body.category).then((levels)=>{
-		//console.log("getLevel resolve", levels);
+		
 		res.send({levels: levels})
 
 	}, (err)=>{
@@ -364,5 +370,25 @@ exports.createQuestion = (req, res) => {
 }
 
 exports.getQuestions = (req, res) => {
-	
+	let errors, questionObject;
+	req.checkBody('category', 'category is required.').notEmpty();
+	req.checkBody('level', 'level is required.').notEmpty();
+
+	errors = req.validationErrors();
+
+	if(errors){
+		res.send({error: errors})
+		return;
+	}
+
+	questionObject = {
+		category: req.body.category,
+		level: req.body.level
+	};
+	utils.getQuestionByCategoryLevel(questionObject).then((questions) =>{
+		res.send({questions: questions})
+	}, (err) => {
+		res.send({error: 'error fetching questions, try again'})
+	})
+
 }
