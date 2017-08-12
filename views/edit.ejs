@@ -1,0 +1,40 @@
+<% include global/header %>
+
+<div id="editContainer">
+	<div id="errorContainer"></div>
+
+	<div class="form-group-edit">
+		<select id ="categorySelect" name="categorySelect" class="form-control">
+	        <option value=""> --Select Category-- </option>	        	
+	    </select>
+	</div>
+
+	<div class="form-group-edit-second">
+		<select id ="levelSelect" name="levelSelect" class="form-control">
+	        	<option value=""> --Select Level-- </option>
+	        </select>
+	</div>
+	<button id="pullQuestionsBtn" class="pullQuestion">PULL QUESTIONS</button>
+
+</div>
+<div id="editQuestionsContainer">
+<table id="questionTable">
+<tbody>
+<tr>
+	<th>Question</th>
+	<th>Option A</th>
+	<th>Option B</th>
+	<th>Option C</th>
+	<th>Option D</th>
+	<th>Answer</th>
+	<th>   </th>
+	<th>   </th> 
+</tr>
+</tbody>
+</table>
+
+</div>
+
+
+
+<% include global/footer %>

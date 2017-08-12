@@ -1,5 +1,6 @@
 window.addEventListener('load', ()=>{
 	
+	
 	const errorDisplay = document.getElementById('errorContainer');
 	const getCategory = () =>{
 		const catSelect = document.getElementById('categorySelect');
@@ -290,13 +291,45 @@ window.addEventListener('load', ()=>{
 							<td><input type="text" class="" id="optnC-${idx}" value="${data.optionC}" disabled></td>
 							<td><input type="text" class="" id="optnD-${idx}" value="${data.optionD}" disabled></td>
 							<td><input type="text" class="" id="answer-${idx}" value="${data.answer}" disabled></td>
-							<td><button id="editBtn-${idx}" onClick="editBtnClickHandler()">EDIT</button></td>
-							<td><button id="updateBtn-${idx}" disabled>UPDATE</button></td>
+							<td><button id="editBtn-${idx}" class="editbtn">EDIT</button></td>
+							<td><button id="updateBtn-${idx}" class="updatebtn" disabled>UPDATE</button></td>
 							</tr>`
 						});
 						$('#questionTable').append(tableData);
-						console.log(res.questions[0].questions);
 
+    					setTimeout(()=>{
+							const editButtons = document.querySelectorAll('.editbtn');
+							const updateButtons = document.querySelectorAll('.updatebtn');
+
+							Array.prototype.forEach.call(editButtons, (button) =>{
+								button.addEventListener('click', (e)=>{
+
+    								let obj ={
+    									question: 'question', 
+    									answer:'answer',
+    									optnA: 'optnA',
+    									optnB: 'optnB',
+    									optnC: 'optnC',
+    									optnD: 'optnD',
+    									updateBtn: 'updateBtn'
+    								};
+    								let suffix = e.target.id.split("-")[1];
+    								e.target.disabled = true;
+    								document.getElementById(obj.question+'-'+suffix).disabled = false;
+    								document.getElementById(obj.answer+'-'+suffix).disabled = false;
+    								document.getElementById(obj.optnA+'-'+suffix).disabled = false;
+    								document.getElementById(obj.optnB+'-'+suffix).disabled = false;
+    								document.getElementById(obj.optnC+'-'+suffix).disabled = false;
+    								document.getElementById(obj.optnD+'-'+suffix).disabled = false;
+    								document.getElementById(obj.updateBtn+'-'+suffix).disabled = false;
+    							});
+    						});
+
+    						//TODO: Compete update call and edit table to fit UI
+    						/*Array.prototype.forEach.call(updateButtons, (button) =>{
+    							button.addEventListener('click', (e)=>{});
+    						});*/
+    					},0);
 					}
 					if(res.error){
 						errorDisplay.innerHTML = res.error;
@@ -352,11 +385,6 @@ window.addEventListener('load', ()=>{
 			document.getElementById('headerEditBtn').style.display = 'none';
 			return;
 		}
-	function editBtnClickHandler(e){
-		let x = e.target.id;/*|| $(this).id*/;
-		console.log(x);
-	}
-
 });
 
 
