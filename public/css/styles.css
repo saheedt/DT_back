@@ -1,3 +1,11 @@
+/**{
+	background-color: gray;
+}*/
+*, *:before, *:after {
+  -webkit-box-sizing: border-box; 
+  -moz-box-sizing: border-box; 
+  box-sizing: border-box;
+}
 .form-group{
 	width: 40%;
 	/*height: 20rem;*/
@@ -47,7 +55,7 @@
 	margin-left: 10%;
 	margin-top: 2rem;
 }
-table{
+table input{
 	width: 100%;
 }
 #loginBtnSubmit{

@@ -263,7 +263,16 @@ window.addEventListener('load', ()=>{
 	if(pullQuestions){
 		
 		pullQuestions.addEventListener('click', (e)=>{
-			let questionObj, tableData = '' /*, questionTable = document.getElementById('questionTable')*/;
+			let questionObj, tableData = `<tr>
+											<th>Question</th>
+											<th>Option A</th>
+											<th>Option B</th>
+											<th>Option C</th>
+											<th>Option D</th>
+											<th>Answer</th>
+											<th>   </th>
+											<th>   </th> 
+										</tr>`;
 			if(categorySelect.value == '' || categorySelect.value == ' '){
 				errorDisplay.innerHTML = 'check selected category bruh';
 				return;
@@ -291,10 +300,12 @@ window.addEventListener('load', ()=>{
 							<td><input type="text" class="" id="optnC-${idx}" value="${data.optionC}" disabled></td>
 							<td><input type="text" class="" id="optnD-${idx}" value="${data.optionD}" disabled></td>
 							<td><input type="text" class="" id="answer-${idx}" value="${data.answer}" disabled></td>
+							<td style="display: none"><input type="text" class="" id="questionID-${idx}" value="${data.questionId}" disabled></td>
 							<td><button id="editBtn-${idx}" class="editbtn">EDIT</button></td>
 							<td><button id="updateBtn-${idx}" class="updatebtn" disabled>UPDATE</button></td>
 							</tr>`
 						});
+						$('#questionTable').empty();
 						$('#questionTable').append(tableData);
 
     					setTimeout(()=>{
@@ -326,9 +337,56 @@ window.addEventListener('load', ()=>{
     						});
 
     						//TODO: Compete update call and edit table to fit UI
-    						/*Array.prototype.forEach.call(updateButtons, (button) =>{
-    							button.addEventListener('click', (e)=>{});
-    						});*/
+    						Array.prototype.forEach.call(updateButtons, (button) =>{
+    							button.addEventListener('click', (e)=>{
+    								let obj ={
+    									question: 'question', 
+    									answer:'answer',
+    									optnA: 'optnA',
+    									optnB: 'optnB',
+    									optnC: 'optnC',
+    									optnD: 'optnD',
+    									updateBtn: 'updateBtn',
+    									editBtn: 'editBtn',
+    									questionID: 'questionID'
+    								};
+    								let suffix = e.target.id.split("-")[1];
+    								let updQstnObj = {
+    									category: categorySelect.value,
+    									level: levelSelect.value,
+    									question: document.getElementById(obj.question+'-'+suffix).value,
+    									optionA: document.getElementById(obj.optnA+'-'+suffix).value,
+    									optionB: document.getElementById(obj.optnB+'-'+suffix).value,
+    									optionC: document.getElementById(obj.optnC+'-'+suffix).value,
+    									optionD: document.getElementById(obj.optnD+'-'+suffix).value,
+    									answer: document.getElementById(obj.answer+'-'+suffix).value,
+    									questionId: document.getElementById(obj.questionID+'-'+suffix).value
+    								};
+    								
+    								fetch('/api/updatequestion',{
+    									method: "POST",
+    									headers:{'Content-Type':'application/json'},
+    									body: JSON.stringify(updQstnObj)
+    								}).then((resp)=>{
+    									resp.json().then((res)=>{
+    										if(res.updatequestion){
+    											e.target.disabled = true;
+    											document.getElementById(obj.question+'-'+suffix).disabled = true;
+    											document.getElementById(obj.answer+'-'+suffix).disabled = true;
+    											document.getElementById(obj.optnA+'-'+suffix).disabled = true;
+    											document.getElementById(obj.optnB+'-'+suffix).disabled = true;
+    											document.getElementById(obj.optnC+'-'+suffix).disabled = true;
+    											document.getElementById(obj.optnD+'-'+suffix).disabled = true;
+    											document.getElementById(obj.editBtn+'-'+suffix).disabled = false;
+    											return;
+    										}
+    										console.log(res);
+    										errorDisplay.innerHTML = res.error;
+    									})
+    								});
+
+    							});
+    						});
     					},0);
 					}
 					if(res.error){
@@ -384,6 +442,9 @@ window.addEventListener('load', ()=>{
 			document.getElementById('headerAddBtn').style.display = 'none';
 			document.getElementById('headerEditBtn').style.display = 'none';
 			return;
+		}
+		if(document.getElementById('editContainer')){
+			document.getElementById('headerEditBtn').style.display = 'none';
 		}
 });
 

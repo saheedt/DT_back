@@ -170,3 +170,49 @@ exports.getQuestionByCategoryLevel = (getQuestionObject) => {
 	});
 
 }
+
+exports.updateQuestionByCategoryLevel = (upQstnObj) =>{
+	let setter = {
+		question: upQstnObj.question,
+		optionA: upQstnObj.optionA,
+		optionB: upQstnObj.optionB,
+		optionC: upQstnObj.optionC,
+		optionD: upQstnObj.optionD,
+		answer: upQstnObj.answer,
+		questionId: upQstnObj.questionId
+	}, toSet;
+
+	return new Promise((resolve, reject) => {
+		//levels: {$elemMatch:{levelname: upQstnObj.level}}
+		db.category.findOne({categoryname: upQstnObj.category},{levels: 1}, (err, doc)=>{
+			if(err){
+				console.log(err)
+				reject(err)
+				return;
+			}
+			if(doc){
+				//console.log(doc)
+				doc.levels.map((data, idx)=>{
+					if(data.levelname === upQstnObj.level){
+						data.questions.map((innerData, innerIdx)=>{
+							if(innerData.questionId === upQstnObj.questionId){
+								toSet = 'levels.'+idx+'.questions.'+innerIdx
+								db.category.update({levels: { $elemMatch:{ questions: {$elemMatch:{questionId: upQstnObj.questionId}}}}}, {$set: {[`${toSet}`]: setter} }, (err, doc)=>{
+									if(err){
+										reject(err)
+										return;
+									}
+									if(doc){
+										resolve(doc)
+										return;
+									}
+								});
+							}
+						});
+					}
+				});
+			}
+		});
+	});
+
+}

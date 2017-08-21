@@ -31,6 +31,7 @@ exports.routes = (app) => {
 	//question routes
 	app.route('/api/createquestion').post(controllers.createQuestion);
 	app.route('/api/question').post(controllers.getQuestions);
+	app.route('/api/updatequestion').post(controllers.updateQuestion);
 	app.route('/api/deletequestion').post(/*controllers.deleteQuestion*/);
 
 	//score route
