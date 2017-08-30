@@ -1,6 +1,39 @@
 'use strict';
 
-const controllers = require('../controllers/controllers.js');
+const controllers = require('../controllers/controllers.js'),
+	   jwt = require('jsonwebtoken');
+
+
+const isAuthorized = (req, res, next) =>{
+	let token = req.body.token
+	
+	jwt.verify(token, process.env.TokenSecret, (err, decoded)=>{
+		if(req.headers['x-is-admin'] == '1'){
+			if(err){
+				res.render('login',{
+					title: 'Sign In',
+					errors: err
+				});
+				return
+			}
+			if(decoded){
+				next()
+				return
+			}
+			
+		}
+		if(req.headers['x-is-admin'] == '0'){
+			if(err){
+				res.send({error: err})
+				return
+			}
+			if(decoded){
+				next()
+				return
+			}		
+		}
+	})
+};
 
 exports.routes = (app) => {
 
@@ -19,25 +52,25 @@ exports.routes = (app) => {
 	//app.route('/api/applogin').post(/*controllers.appLogin*/);
 
 	//category routes
-	app.route('/api/createcategory').post(controllers.createCategory);
-	app.route('api/deletecategory').post(/*controllers.deletcategory*/);
-	app.route('/api/category').post(controllers.getCategory);
+	app.route('/api/createcategory').post(isAuthorized, controllers.createCategory);
+	app.route('api/deletecategory').post(/*isAuthorized, controllers.deletcategory*/);
+	app.route('/api/category').post(isAuthorized, controllers.getCategory);
 
 	//level routes
-	app.route('/api/createlevel').post(controllers.createLevel);
-	app.route('/api/deletelevel').post(/*controllers.deleteLevel*/);
-	app.route('/api/level').post(controllers.level);
+	app.route('/api/createlevel').post(isAuthorized, controllers.createLevel);
+	app.route('/api/deletelevel').post(/*isAuthorized, controllers.deleteLevel*/);
+	app.route('/api/level').post(isAuthorized, controllers.level);
 
 	//question routes
-	app.route('/api/createquestion').post(controllers.createQuestion);
-	app.route('/api/question').post(controllers.getQuestions);
-	app.route('/api/updatequestion').post(controllers.updateQuestion);
-	app.route('/api/deletequestion').post(/*controllers.deleteQuestion*/);
+	app.route('/api/createquestion').post(isAuthorized, controllers.createQuestion);
+	app.route('/api/question').post(isAuthorized, controllers.getQuestions);
+	app.route('/api/updatequestion').post(isAuthorized, controllers.updateQuestion);
+	app.route('/api/deletequestion').post(/*isAuthorized, controllers.deleteQuestion*/);
 
 	//score route
-	app.route('/api/addscore').post(/*controllers.addScore*/);
-	app.route('/api/addtoleaders').post(/*controllers.addToLeaderBoard*/);
+	app.route('/api/updatescore').post(isAuthorized, controllers.addScore);
+	app.route('/api/updateleaders').post(isAuthorized, controllers.addToLeaderBoard);
 
 	//add answered route
-	app.route('/api/answered').post(/*controllers.answered*/)
+	app.route('/api/answered').post(/*isAuthorized, controllers.answered*/)
 }

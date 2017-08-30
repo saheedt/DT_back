@@ -10,6 +10,7 @@ const db = exports.db = mongojs(process.env.DBConnectString,
 	[process.env.UsersCollection, process.env.LeaderboardCollection, 
 	process.env.CategoryCollection, process.env.SessionCollection]);
 
+
 db.on('connect', ()=>{
 	console.log('database connected');
 });
@@ -183,15 +184,12 @@ exports.updateQuestionByCategoryLevel = (upQstnObj) =>{
 	}, toSet;
 
 	return new Promise((resolve, reject) => {
-		//levels: {$elemMatch:{levelname: upQstnObj.level}}
 		db.category.findOne({categoryname: upQstnObj.category},{levels: 1}, (err, doc)=>{
 			if(err){
-				console.log(err)
 				reject(err)
 				return;
 			}
 			if(doc){
-				//console.log(doc)
 				doc.levels.map((data, idx)=>{
 					if(data.levelname === upQstnObj.level){
 						data.questions.map((innerData, innerIdx)=>{
@@ -214,5 +212,94 @@ exports.updateQuestionByCategoryLevel = (upQstnObj) =>{
 			}
 		});
 	});
-
 }
+
+exports.addUserScore = (scoreUpdateData) => {
+
+	return new Promise((resolve, reject) => {
+		db.users.update({email: scoreUpdateData.email}, {$inc: { score: scoreUpdateData.score } },(err, doc)=>{
+			if(err){
+				reject(err)
+				return
+			}
+			if(doc){
+				resolve(doc)
+				return
+			}
+		});
+	});
+}
+
+exports.updateLeaderBoard = (leaderBoardUpdateData) => {
+	return new Promise((resolve, reject) => {
+		db.leaderboard.findOne({screenname: leaderBoardUpdateData.screenname}, (err, doc) => {
+
+			if (err){
+				reject(err)
+				return
+			}
+			
+			if(doc){
+				db.leaderboard.update({screenname: leaderBoardUpdateData.screenname}, {$set:{score: leaderBoardUpdateData.score}}, (updateErr, updateDoc)=>{
+					if(updateErr){
+						reject(updateErr)
+						return
+					}
+					if(updateDoc){
+						resolve(updateDoc)
+						return
+					}
+				})
+			}else{
+				db.leaderboard.insert({screenname: leaderBoardUpdateData.screenname, score: leaderBoardUpdateData.score}, (insertErr, insertDoc) => {
+					if(insertErr){
+						reject(insertErr)
+						return
+					}
+					if(insertDoc){
+						resolve(insertDoc)
+						return
+					}
+				})
+			}
+		})
+	});
+}
+
+exports.answered = (answeredData) =>{
+	let found = false;
+	return new Promise((resolve, reject) => {
+		db.users.findOne({"email": answeredData.email}, {answered: 1}, (err, doc) => {
+
+			if(err){
+				reject(err)
+				return
+			}
+
+			if(doc){
+				doc.map((data, idx) => {
+					if(data == answeredData.questionId){
+						found = true
+						return
+					}					
+				})
+				if(found === true){
+					db.users.update({"email": answeredData.email}, {$push: {answered: answeredData.questionId}}, (updateErr, updateDoc) => {
+						if(updateErr){
+							found = false
+							reject(updateErr)
+							return
+						}
+						if(updateDoc){
+							found = false
+							resolve(updateDoc)
+							return
+						}
+					});
+				}
+			}
+
+		});
+	});
+}
+

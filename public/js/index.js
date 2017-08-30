@@ -1,5 +1,14 @@
 window.addEventListener('load', ()=>{
-	
+
+	if(document.getElementById('tokInput')){
+		localStorage.setItem('DT_BACK_TOK', document.getElementById('tokInput').value)
+		document.getElementById('homeContainer').removeChild(document.getElementById('tokInput'));
+		return;
+	}
+	if(!localStorage.getItem('DT_BACK_TOK') && !document.getElementById('loginTitle')){
+		window.location.replace('/');
+		return;
+	}
 	
 	const errorDisplay = document.getElementById('errorContainer');
 	const getCategory = () =>{
@@ -8,10 +17,14 @@ window.addEventListener('load', ()=>{
 
 		fetch("/api/category", {
   		method: "POST",
-  		headers:{'Content-Type':'application/json'}
+  		headers:{'Content-Type':'application/json',
+  				'x-is-admin': '1'
+  		},
+  		body: JSON.stringify({token: localStorage.getItem('DT_BACK_TOK')})
 		}).then((resp)=>{
 			resp.json().then((res) =>{
 				if(res.categories){
+					console.log(res)
 					if(res.categories.length <= 0){
 						catSelect.disabled = true;
 						$(catSelect).empty();
@@ -70,12 +83,14 @@ window.addEventListener('load', ()=>{
 			return;
 		}
 
-		let category = {"category": categorySelect.value}, levels = '';
+		let category = {"category": categorySelect.value, token: localStorage.getItem('DT_BACK_TOK') }, levels = '';
 		errorDisplay.innerHTML = '';
 
 		fetch("api/level", {
   		method: "POST",
-  		headers:{'Content-Type':'application/json'},
+  		headers:{'Content-Type':'application/json',
+  				 'x-is-admin': '1'
+  		},
   		body: JSON.stringify(category)
 		}).then((resp)=>{
 			resp.json().then((res)=>{
@@ -120,14 +135,17 @@ window.addEventListener('load', ()=>{
 		}
 
 		let catData = {
-			"newCategory" : newCategory.value
+			"newCategory" : newCategory.value,
+			token: localStorage.getItem('DT_BACK_TOK')
 		}, categories = '';
 
 		errorDisplay.innerHTML = '';
 
 		fetch("/api/createcategory", {
   		method: "POST",
-  		headers:{'Content-Type':'application/json'},
+  		headers:{'Content-Type':'application/json',
+  				 'x-is-admin': '1'
+  		},
   		body: JSON.stringify(catData)
 		}).then((resp)=>{
 			resp.json().then((res)=>{
@@ -165,14 +183,17 @@ window.addEventListener('load', ()=>{
 		}
 		let levdata = {
 			"category": categorySelect.value,
-			"newlevel": newLevel.value
+			"newlevel": newLevel.value,
+			token: localStorage.getItem('DT_BACK_TOK')
 		}, levels = '';
 
 		errorDisplay.innerHTML = '';
 
 		fetch("api/createlevel", {
   			method: "POST",
-  			headers:{'Content-Type':'application/json'},
+  			headers:{'Content-Type':'application/json',
+  					 'x-is-admin': '1'
+  			},
   			body: JSON.stringify(levdata)
 		}).then((resp)=>{
 			resp.json().then((res)=>{			
@@ -229,13 +250,16 @@ window.addEventListener('load', ()=>{
 					optionB: optionB.value,
 					optionC: optionC.value,
 					optionD: optionD.value,
-					answer: answer.value
+					answer: answer.value,
+					token: localStorage.getItem('DT_BACK_TOK')
 				};
 				errorDisplay.innerHTML = '';
 
 				fetch("/api/createquestion", {
 					method: "POST",
-  					headers:{'Content-Type':'application/json'},
+  					headers:{'Content-Type':'application/json',
+  							 'x-is-admin': '1'
+  					},
   					body: JSON.stringify(questionObject)
 				}).then((resp) => {
 					resp.json().then((res) => {
@@ -283,11 +307,14 @@ window.addEventListener('load', ()=>{
 			}
 			questionObj = {
 				category: categorySelect.value,
-				level: levelSelect.value
+				level: levelSelect.value,
+				token: localStorage.getItem('DT_BACK_TOK')
 			};
 			fetch("api/question", {
 				method: "POST",
-				headers:{'Content-Type':'application/json'},
+				headers:{'Content-Type':'application/json',
+						 'x-is-admin': '1'
+				},
 				body: JSON.stringify(questionObj)
 			}).then((resp) =>{
 				resp.json().then((res)=>{
@@ -360,16 +387,20 @@ window.addEventListener('load', ()=>{
     									optionC: document.getElementById(obj.optnC+'-'+suffix).value,
     									optionD: document.getElementById(obj.optnD+'-'+suffix).value,
     									answer: document.getElementById(obj.answer+'-'+suffix).value,
-    									questionId: document.getElementById(obj.questionID+'-'+suffix).value
+    									questionId: document.getElementById(obj.questionID+'-'+suffix).value,
+    									token: localStorage.getItem('DT_BACK_TOK')
     								};
     								
     								fetch('/api/updatequestion',{
     									method: "POST",
-    									headers:{'Content-Type':'application/json'},
+    									headers:{'Content-Type':'application/json',
+    											'x-is-admin': '1'
+    									},
     									body: JSON.stringify(updQstnObj)
     								}).then((resp)=>{
     									resp.json().then((res)=>{
     										if(res.updatequestion){
+    											console.log(res.updatequestion);
     											e.target.disabled = true;
     											document.getElementById(obj.question+'-'+suffix).disabled = true;
     											document.getElementById(obj.answer+'-'+suffix).disabled = true;
@@ -401,18 +432,27 @@ window.addEventListener('load', ()=>{
 
 	//***********login page*********
 
-	let loginform = document.getElementById('loginform'),
+	let loginForm = document.getElementById('loginform'),
 		loginEmail = document.getElementById('loginEmail'),
 		loginPassword = document.getElementById('loginPassword');
 
-		if(loginform){
-			loginform.addEventListener('submit', (e) => {
+		if(loginForm){
+			loginForm.addEventListener('submit', (e) => {
 				e.preventDefault();
 				console.log('login command got called in index.js..');
 				let logindata = {
 					"email": loginEmail.value,
-					"password": loginPassword.value
-				}
+					"password": loginPassword.value,
+					"isAdmin": true
+				};
+
+				/*fetch('/api/login',{
+    				method: "POST",
+    				headers:{'Content-Type':'application/json',
+    						 'x-is-admin': '1'
+    				},
+    				body: JSON.stringify(logindata)
+    			})*/
 
 				const form = document.createElement("form");
 			  		form.setAttribute("method", "post");
@@ -428,8 +468,14 @@ window.addEventListener('load', ()=>{
 			  		input2.name = "password";
 			  		input2.value = logindata.password;
 
+			  	const input3 = document.createElement('input');
+			  		input3.type = 'hidden';
+			  		input3.name = "isAdmin";
+			  		input3.value = logindata.isAdmin;
+
 				form.appendChild(input);
 				form.appendChild(input2);
+				form.appendChild(input3);
 				document.body.appendChild(form);
 				form.submit();
 				document.body.removeChild(form);

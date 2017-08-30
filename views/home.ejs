@@ -1,6 +1,6 @@
 <% include global/header %>
 
-<div>
+<div id="homeContainer">
 	
 	<% if ((errors) && (typeof(errors) === "object")){ %>
 			<ul>
@@ -13,6 +13,9 @@
 			<ul>
 				<li><%= errors %></li>
 			</ul>
+		<% } %>
+		<% if ((token) && (token.length > 0)){ %>
+			<input type="hidden" value= <%= token %>  id="tokInput">
 		<% } %>
 
 	<div id="homeBtnContainer" style="border: 1px solid grey; width: 50%; margin-left: 25%; height: 30rem">

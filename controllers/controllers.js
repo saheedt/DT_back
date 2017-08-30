@@ -2,15 +2,18 @@
 
 const bcrypt = require('bcrypt'),
       saltRounds = 10,
-      utils = require('../utils/utils.js');
+      utils = require('../utils/utils.js'),
+      jwt = require('jsonwebtoken');
 require('dotenv').config();
+let globToken = '';
+
 
 //*********view routes*************
 exports.showLogin = (req, res) => {
-	if (req.session.user){
+	/*if (req.session.user){
 		res.redirect('/home');
 		return;
-	}
+	}*/
 	res.render('login', {
 		title: 'Sign In',
 		errors: ''
@@ -18,20 +21,21 @@ exports.showLogin = (req, res) => {
 }
 
 exports.showHome = (req, res) => {
-	if(!req.session.user){
+	/*if(!req.session.user){
 		res.redirect('/');
 		return;
-	}
+	}*/
 	res.render('home', {
-		errors: ''
+		errors: '',
+		token:globToken
 	});
 }
 
 exports.showAdd = (req, res) => {
-	if(!req.session.user){
+	/*if(!req.session.user){
 		res.redirect('/');
 		return;
-	}
+	}*/
 	res.render('add', {
 		errors:'',
 		category: '',
@@ -40,10 +44,10 @@ exports.showAdd = (req, res) => {
 }
 
 exports.showEdit = (req, res) => {
-	if(!req.session.user){
+	/*if(!req.session.user){
 		res.redirect('/');
 		return;
-	}
+	}*/
 	res.render('edit');
 }
 
@@ -71,30 +75,64 @@ exports.createUser = (req, res) => {
 	}
 	utils.db.users.findOne({"email": req.body.email}, {email: 1}, (err, doc) => {
 		if(doc){
-			res.send({"error": "user already exists"});
+			res.send({"error": "email address already exists"});
 		}else{
-			bcrypt.genSalt(saltRounds, (err, salt) => {
-				bcrypt.hash(req.body.password, salt, (err, hash) => {
-					if(err){
-						res.send({"error": "error creating user"});
-					}else{
-						let newUser = {
-							"email": req.body.email,
-							"screenname": req.body.screenname,
-							"admin": req.body.admin,
-							"password": hash
-						};
-
-						utils.db.users.insert(newUser, (err, result) => {
-							if(err){
-								res.send({"error": "error saving user, please try again."});
+			utils.db.users.findOne({"screenname": req.body.screenname}, {screenname: 1}, (screenErr, screenDoc) => {
+				if(screenDoc){
+					res.send({"error": "screen name already exists"})
+				}else{
+					bcrypt.genSalt(saltRounds, (saltErr, salt) => {
+						if(saltErr){
+							res.send({error: "error creating user"})
+							return
+						}
+						bcrypt.hash(req.body.password, salt, (bcryptErr, hash) => {
+							if(bcryptErr){
+								res.send({"error": "error creating user"});
 							}else{
-								res.send({"email": newUser.email, "screenname": newUser.screenname});
-							}
-						});
-					}
+								let newUser = {
+									"email": req.body.email,
+									"screenname": req.body.screenname,
+									"admin": req.body.admin,
+									"password": hash,
+									"score": 0,
+									"answered": []
+								},
+								toTOk = {
+									"email": newUser.email,
+									"screenname": newUser.screenname,
+									"admin": newUser.admin,
+									"password": newUser.password
+								};
 
-				});
+								utils.db.users.insert(newUser, (insertErr, result) => {
+									if(insertErr){
+										res.send({"error": "error saving user, please try again."});
+									}else{
+										jwt.sign(toTOk, process.env.TokenSecret, { expiresIn: '24h' }, (tokErr, token)=>{
+											if(tokErr){
+												res.send({"error": tokErr})
+												return
+											}
+											if(token){
+												let user = {
+													"email": newUser.email,
+													"screenname": newUser.screenname,
+													"type": "client",
+													"token": token
+												};
+												res.send({"user": user})
+												return;
+											}
+
+										});
+									}
+								});
+							}
+
+						});
+					})
+				}
 			});
 		}
 	});
@@ -123,9 +161,13 @@ exports.createBackUser = (req, res) => {
 			res.send({"error": "Already Existing.."});
 		}else{
 
-			bcrypt.genSalt(saltRounds, (err, salt) => {
-				bcrypt.hash(req.body.password, salt, (err, hash) => {
-					if(err){
+			bcrypt.genSalt(saltRounds, (saltErr, salt) => {
+				if(saltErr){
+					res.send({error: "error creating user 1-1"})
+					return
+				}
+				bcrypt.hash(req.body.password, salt, (bcryptErr, hash) => {
+					if(bcryptErr){
 						res.send({"error": "Error creating user 1-1"});
 					}else{
 						let newAdmin = {
@@ -154,17 +196,18 @@ exports.login = (req, res) => {
 	let errors;
 	req.checkBody('email', 'Email is Required').notEmpty();
 	req.checkBody('password', 'Password is required.').notEmpty();
-	console.log("email value: ", req.body.email);
-	console.log("password value: ", req.body.password);
 
 	errors = req.validationErrors();
-	console.log(errors);
 
-	if(errors){
+	if(errors && req.body.isAdmin){
 		res.render('login', {
 			title: 'Sign In',
 			errors: errors
 		});
+		return;
+	}
+	if(errors && !req.body.isAdmin){
+		res.send({error: errors})
 		return;
 	}
 	utils.db.users.findOne({"email": req.body.email}, {email: 1, password: 1, admin: 1, screenname: 1}, (err, doc)=>{
@@ -176,7 +219,6 @@ exports.login = (req, res) => {
 			});
 			return;
 		}else{
-			//req.session.user = doc;
 			if( doc == null){
 				res.render('login', {
 					title: 'Sign In',
@@ -184,39 +226,52 @@ exports.login = (req, res) => {
 				});
 				return;
 			}else{
-				bcrypt.compare(req.body.password, doc.password, (err, resp) => {
+				bcrypt.compare(req.body.password, doc.password, (cryptErr, resp) => {
 					if(resp){
-						if(doc.admin == "1"){
-							req.session.user = doc;
-
-							res.render('home', {
-								errors: ''
-							});
-							//res.redirect('/home');
-							return;
-						}
-						if(doc.admin == "0"){
-							output = {
-								"email": doc.email,
-								"screenname": doc.screenname,
-								"type": "client"
-							};
-							res.send({"user": output});
-							return;
-						}
+						jwt.sign(doc, process.env.TokenSecret, { expiresIn: '24h' }, (tokErr, token)=>{
 						
+							if(tokErr && doc.admin == "1"){
+								res.render('login', {
+									title: 'Sign In',
+									errors: tokErr
+								});
+								return;
+							}
+							if(tokErr && doc.admin == "0"){
+								res.send({"error": tokErr});
+								return;
+							}
+							if(token && doc.admin == "1"){
+								/*res.render('home', {
+									errors: '',
+									token: token
+								});*/
+								globToken = token
+								res.redirect('/home')
+								return;
+							}
+							if(token && doc.admin == "0"){
+								output = {
+									"email": doc.email,
+									"screenname": doc.screenname,
+									"type": "client",
+									"token": token
+								};
+								res.send({"user": output});
+								return;
+							}
+						});
 					}
-
-					if(err){
+					if(cryptErr){
 						if(doc.admin == "1"){
 							res.render('login', {
 								title: 'Sign In',
-								errors: 'incorrect password.'
+								errors: 'incorrect password'
 							});
 							return;
 						}
 						if(doc.admin == "0"){
-							res.send({"error": "incorrect password."});
+							res.send({"error": "incorrect password"});
 							return;
 						}						
 					}
@@ -227,17 +282,12 @@ exports.login = (req, res) => {
 }
 
 exports.getCategory = (req, res) => {
-
 	utils.fetchCategories().then((doc) => {
-
+		let sess = req.session;
 		res.send({categories: doc})
-
 	}, (err) => {
-
 		res.send({error: 'error fetching categories'})
-
 	});
-
 }
 
 exports.createCategory = (req, res) => {
@@ -428,4 +478,62 @@ exports.updateQuestion = (req, res) => {
 	}, (err) => {
 		res.send({error: 'error updating question, try again'})
 	})
+}
+
+exports.addScore = (req, res) =>{
+	let errors;
+	req.checkBody('email', 'email is required.').notEmpty();
+	req.checkBody('score', 'score is required.').notEmpty();
+
+	errors = req.validationErrors();
+
+	if(errors){
+		res.send({error: errors})
+		return
+	}
+
+	utils.addUserScore({email: req.body.email, score: req.body.score }).then((score)=>{
+		res.send({score: score})
+	},(err)=>{
+		res.send({error: 'error updating score'})
+	})
+}
+
+exports.addToLeaderBoard = (req, res) => {
+	let errors;
+	req.checkBody('screenname','screen name is required').notEmpty()
+	req.checkBody('score','score is required').notEmpty()
+
+	errors = req.validationErrors();
+
+	if(errors){
+		res.send({error: errors})
+		return
+	}
+
+	utils.updateLeaderBoard({screenname: req.body.screenname, score: req.body.score}).then((leader)=>{
+		res.send({leader: leader})
+	},(err)=>{
+		res.send({error: err})
+	})
+}
+
+exports.answered = (req, res) =>{
+	let errors;
+	req.checkBody('email','email is required').notEmpty()
+	req.checkBody('questionId','question id is required').notEmpty()
+
+	errors = req.validationErrors();
+
+	if(errors){
+		res.send({error: errors})
+		return
+	}
+
+	utils.answered({email: req.body.email, questionId: req.body.questionId}).then((answered)=>{
+		res.send({answered: answered})
+	},(err)=>{
+		res.send({error: err})
+	})
+
 }

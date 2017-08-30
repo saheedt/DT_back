@@ -12,7 +12,7 @@ const express = require('express'),
 	require('dotenv').config();
 
 
-let port = process.env.ServerPort;
+let port = process.env.ServerPort || 8000;
 //let ObjectId = mongojs.ObjectId;
 
 /*db.users.find((err, docs)=>{
