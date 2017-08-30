@@ -7,13 +7,13 @@ const bcrypt = require('bcrypt'),
 require('dotenv').config();
 let globToken = '';
 
-
 //*********view routes*************
 exports.showLogin = (req, res) => {
 	/*if (req.session.user){
 		res.redirect('/home');
 		return;
 	}*/
+	
 	res.render('login', {
 		title: 'Sign In',
 		errors: ''

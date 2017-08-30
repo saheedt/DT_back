@@ -278,6 +278,9 @@ exports.answered = (answeredData) =>{
 
 			if(doc){
 				doc.map((data, idx) => {
+					if(found === true){
+						return;
+					}
 					if(data == answeredData.questionId){
 						found = true
 						return

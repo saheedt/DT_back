@@ -23,8 +23,8 @@ window.addEventListener('load', ()=>{
   		body: JSON.stringify({token: localStorage.getItem('DT_BACK_TOK')})
 		}).then((resp)=>{
 			resp.json().then((res) =>{
+
 				if(res.categories){
-					console.log(res)
 					if(res.categories.length <= 0){
 						catSelect.disabled = true;
 						$(catSelect).empty();
@@ -42,6 +42,10 @@ window.addEventListener('load', ()=>{
 				}
 				if(res.error){
 					//TODO: Handle error
+					if((res.error.name == "TokenExpiredError") || (res.error.name && res.error.message)){
+						window.location.replace('/');
+						return
+					}
 					errorDisplay.innerHTML = res.error;
 				}
 				
@@ -115,6 +119,10 @@ window.addEventListener('load', ()=>{
 				}
 				if(res.error){
 					//TODO: Handle error
+					if((res.error.name == "TokenExpiredError") || (res.error.name && res.error.message)){
+						window.location.replace('/');
+						return
+					}
 					errorDisplay.innerHTML = res.error;
 				}
 			})
@@ -163,6 +171,10 @@ window.addEventListener('load', ()=>{
 				}
 				if(res.error){
 					//TODO: Handle error
+					if((res.error.name == "TokenExpiredError") || (res.error.name && res.error.message)){
+						window.location.replace('/');
+						return
+					}
 					errorDisplay.innerHTML = res.error;
 				}
 				
@@ -212,6 +224,10 @@ window.addEventListener('load', ()=>{
 				}
 				if(res.error){
 					//TODO: Handle error
+					if((res.error.name == "TokenExpiredError") || (res.error.name && res.error.message)){
+						window.location.replace('/');
+						return
+					}
 					errorDisplay.innerHTML = res.error;
 				}
 				
@@ -274,6 +290,10 @@ window.addEventListener('load', ()=>{
 							return;
 						}
 						if(res.error){
+							if((res.error.name == "TokenExpiredError") || (res.error.name && res.error.message)){
+								window.location.replace('/');
+							return
+							}
 							errorDisplay.innerHTML = res.error;
 							return;
 						}
@@ -400,7 +420,6 @@ window.addEventListener('load', ()=>{
     								}).then((resp)=>{
     									resp.json().then((res)=>{
     										if(res.updatequestion){
-    											console.log(res.updatequestion);
     											e.target.disabled = true;
     											document.getElementById(obj.question+'-'+suffix).disabled = true;
     											document.getElementById(obj.answer+'-'+suffix).disabled = true;
@@ -411,7 +430,6 @@ window.addEventListener('load', ()=>{
     											document.getElementById(obj.editBtn+'-'+suffix).disabled = false;
     											return;
     										}
-    										console.log(res);
     										errorDisplay.innerHTML = res.error;
     									})
     								});
@@ -421,6 +439,10 @@ window.addEventListener('load', ()=>{
     					},0);
 					}
 					if(res.error){
+						if((res.error.name == "TokenExpiredError") || (res.error.name && res.error.message)){
+							window.location.replace('/');
+							return
+						}
 						errorDisplay.innerHTML = res.error;
 						return;
 					}
