@@ -12,7 +12,7 @@ const express = require('express'),
 	require('dotenv').config();
 
 
-let port = process.env.ServerPort || 8000;
+let port = process.env.PORT || 8000;
 
 app.use(session({
 	secret: process.env.secretKey,
