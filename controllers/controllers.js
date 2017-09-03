@@ -5,37 +5,24 @@ const bcrypt = require('bcrypt'),
       utils = require('../utils/utils.js'),
       jwt = require('jsonwebtoken');
 require('dotenv').config();
-let globToken = '';
+let globToken = '', globTokenErr = '', globLoginErr = '';
 
 //*********view routes*************
 exports.showLogin = (req, res) => {
-	/*if (req.session.user){
-		res.redirect('/home');
-		return;
-	}*/
-	
 	res.render('login', {
 		title: 'Sign In',
-		errors: ''
+		errors: globLoginErr
 	});
 }
 
 exports.showHome = (req, res) => {
-	/*if(!req.session.user){
-		res.redirect('/');
-		return;
-	}*/
 	res.render('home', {
-		errors: '',
-		token:globToken
+		errors: globTokenErr,
+		token: globToken
 	});
 }
 
 exports.showAdd = (req, res) => {
-	/*if(!req.session.user){
-		res.redirect('/');
-		return;
-	}*/
 	res.render('add', {
 		errors:'',
 		category: '',
@@ -44,10 +31,6 @@ exports.showAdd = (req, res) => {
 }
 
 exports.showEdit = (req, res) => {
-	/*if(!req.session.user){
-		res.redirect('/');
-		return;
-	}*/
 	res.render('edit');
 }
 
@@ -70,25 +53,25 @@ exports.createUser = (req, res) => {
 	errors = req.validationErrors();
 
 	if(errors){
-		res.send({"error": errors});
+		res.json({"error": errors});
 		return;
 	}
 	utils.db.users.findOne({"email": req.body.email}, {email: 1}, (err, doc) => {
 		if(doc){
-			res.send({"error": "email address already exists"});
+			res.json({"error": "email address already exists"});
 		}else{
 			utils.db.users.findOne({"screenname": req.body.screenname}, {screenname: 1}, (screenErr, screenDoc) => {
 				if(screenDoc){
-					res.send({"error": "screen name already exists"})
+					res.json({"error": "screen name already exists"})
 				}else{
 					bcrypt.genSalt(saltRounds, (saltErr, salt) => {
 						if(saltErr){
-							res.send({error: "error creating user"})
+							res.json({error: "error creating user"})
 							return
 						}
 						bcrypt.hash(req.body.password, salt, (bcryptErr, hash) => {
 							if(bcryptErr){
-								res.send({"error": "error creating user"});
+								res.json({"error": "error creating user"});
 							}else{
 								let newUser = {
 									"email": req.body.email,
@@ -101,17 +84,16 @@ exports.createUser = (req, res) => {
 								toTOk = {
 									"email": newUser.email,
 									"screenname": newUser.screenname,
-									"admin": newUser.admin,
-									"password": newUser.password
+									"admin": newUser.admin
 								};
 
 								utils.db.users.insert(newUser, (insertErr, result) => {
 									if(insertErr){
-										res.send({"error": "error saving user, please try again."});
+										res.json({"error": "error saving user, please try again."});
 									}else{
 										jwt.sign(toTOk, process.env.TokenSecret, { expiresIn: '24h' }, (tokErr, token)=>{
 											if(tokErr){
-												res.send({"error": tokErr})
+												res.json({"error": tokErr})
 												return
 											}
 											if(token){
@@ -121,7 +103,7 @@ exports.createUser = (req, res) => {
 													"type": "client",
 													"token": token
 												};
-												res.send({"user": user})
+												res.json({"user": user})
 												return;
 											}
 
@@ -153,22 +135,22 @@ exports.createBackUser = (req, res) => {
 
 	errors = req.validationErrors();
 	if(errors){
-		res.send({"error": errors});
+		res.json({"error": errors});
 		return;
 	}
 	utils.db.users.findOne({"email": req.body.email}, {email: 1}, (err, doc)=>{
 		if(doc){
-			res.send({"error": "Already Existing.."});
+			res.json({"error": "Already Existing.."});
 		}else{
 
 			bcrypt.genSalt(saltRounds, (saltErr, salt) => {
 				if(saltErr){
-					res.send({error: "error creating user 1-1"})
+					res.json({error: "error creating user 1-1"})
 					return
 				}
 				bcrypt.hash(req.body.password, salt, (bcryptErr, hash) => {
 					if(bcryptErr){
-						res.send({"error": "Error creating user 1-1"});
+						res.json({"error": "Error creating user 1-1"});
 					}else{
 						let newAdmin = {
 							"email": req.body.email,
@@ -178,9 +160,9 @@ exports.createBackUser = (req, res) => {
 
 						utils.db.users.insert(newAdmin, (err, result) => {
 							if(err){
-								res.send({"error": "Error saving user, please try again."});
+								res.json({"error": "Error saving user, please try again."});
 							}else{
-								res.send({"email": newAdmin.email});
+								res.json({"email": newAdmin.email});
 							}
 						});
 					}
@@ -192,7 +174,6 @@ exports.createBackUser = (req, res) => {
 }
 
 exports.login = (req, res) => {
-	console.log('server login got called..');
 	let errors;
 	req.checkBody('email', 'Email is Required').notEmpty();
 	req.checkBody('password', 'Password is required.').notEmpty();
@@ -200,52 +181,51 @@ exports.login = (req, res) => {
 	errors = req.validationErrors();
 
 	if(errors && req.body.isAdmin){
-		res.render('login', {
-			title: 'Sign In',
-			errors: errors
-		});
+		globLoginErr = errors
+		res.redirect('/')
 		return;
 	}
 	if(errors && !req.body.isAdmin){
-		res.send({error: errors})
+		res.json({error: errors})
 		return;
 	}
 	utils.db.users.findOne({"email": req.body.email}, {email: 1, password: 1, admin: 1, screenname: 1}, (err, doc)=>{
 		let output;
 		if(err){
-			res.render('login', {
-				title: 'Sign In',
-				errors: 'email address not found on this platform.'
-			});
-			return;
+			if(req.body.isAdmin){
+				globLoginErr = 'email address not found on this platform'
+				res.redirect('/')
+				return;
+			}
+			res.json({error: 'email address not found on this platform'})			
 		}else{
 			if( doc == null){
-				res.render('login', {
-					title: 'Sign In',
-					errors: 'you have to sign up first!!!'
-				});
-				return;
+				if(req.body.isAdmin){
+					globLoginErr = 'you have to sign up first!!!'
+					res.redirect('/')
+					return
+				}
+				res.json({error: 'you have to sign up first!!!'})
 			}else{
 				bcrypt.compare(req.body.password, doc.password, (cryptErr, resp) => {
 					if(resp){
-						jwt.sign(doc, process.env.TokenSecret, { expiresIn: '24h' }, (tokErr, token)=>{
+						let toTok = {
+							"email": doc.email,
+							"screenname": doc.screenname,
+							"admin": doc.admin
+						};
+						jwt.sign(toTok, process.env.TokenSecret, { expiresIn: '24h' }, (tokErr, token)=>{
 						
 							if(tokErr && doc.admin == "1"){
-								res.render('login', {
-									title: 'Sign In',
-									errors: tokErr
-								});
+								globLoginErr = tokErr
+								res.redirect('/')
 								return;
 							}
 							if(tokErr && doc.admin == "0"){
-								res.send({"error": tokErr});
+								res.json({"error": tokErr});
 								return;
 							}
 							if(token && doc.admin == "1"){
-								/*res.render('home', {
-									errors: '',
-									token: token
-								});*/
 								globToken = token
 								res.redirect('/home')
 								return;
@@ -257,21 +237,19 @@ exports.login = (req, res) => {
 									"type": "client",
 									"token": token
 								};
-								res.send({"user": output});
+								res.json({"user": output});
 								return;
 							}
 						});
 					}
 					if(cryptErr){
 						if(doc.admin == "1"){
-							res.render('login', {
-								title: 'Sign In',
-								errors: 'incorrect password'
-							});
+							globLoginErr =  'incorrect password'
+							res.redirect('/')
 							return;
 						}
 						if(doc.admin == "0"){
-							res.send({"error": "incorrect password"});
+							res.json({"error": "incorrect password"});
 							return;
 						}						
 					}
@@ -284,9 +262,10 @@ exports.login = (req, res) => {
 exports.getCategory = (req, res) => {
 	utils.fetchCategories().then((doc) => {
 		let sess = req.session;
-		res.send({categories: doc})
+		res.statusCode
+		res.json({categories: doc})
 	}, (err) => {
-		res.send({error: 'error fetching categories'})
+		res.json({error: 'error fetching categories'})
 	});
 }
 
@@ -297,17 +276,17 @@ exports.createCategory = (req, res) => {
 
 	errors = req.validationErrors();
 	if (errors){
-		res.send({error: errors});
+		res.json({error: errors});
 		return;
 	}
 	utils.db.category.findOne({"categoryname": req.body.newCategory}, (err, doc) => {
 		if (doc) {
-			res.send({error: 'category already exists!!!'})
+			res.json({error: 'category already exists!!!'})
 			return;
 		}
 
 		if (err) {
-			res.send({error: err})
+			res.json({error: err})
 			return;
 		}
 
@@ -318,17 +297,15 @@ exports.createCategory = (req, res) => {
 
 		utils.db.category.insert(newCategory, (err, result) => {
 			if(err){
-				res.send({error: 'error creating new category, please try again'})
+				res.json({error: 'error creating new category, please try again'})
 				return;
 			}
 
 			if(result){
 				utils.fetchCategories().then((doc) => {
-
-					res.send({categories: doc})
+					res.json({categories: doc})
 				}, (err) => {
-					console.log('create newCategory: ', err);
-					res.send({error: 'error fetching categories' })
+					res.json({error: 'error fetching categories' })
 				});
 
 			}
@@ -343,17 +320,16 @@ exports.level = (req, res) => {
 	errors = req.validationErrors();
 
 	if (errors){
-		res.send({error: errors})
+		res.json({error: errors})
 		return;
 	}
 
 	utils.fetchLevelByCategory(req.body.category).then((levels)=>{
 		
-		res.send({levels: levels})
+		res.json({levels: levels})
 
 	}, (err)=>{
-		console.log("getLevel reject", err);
-		res.send({error: 'error retrieving levels'})
+		res.json({error: 'error retrieving levels'})
 
 	});
 
@@ -368,19 +344,19 @@ exports.createLevel = (req, res) => {
 	errors = req.validationErrors();
 
 	if (errors){
-		res.send({error: errors})
+		res.json({error: errors})
 		return;
 	}
 
 	utils.createLevelByCategory(req.body.category, req.body.newlevel).then((level)=>{
 		utils.fetchLevelByCategory(req.body.category).then((levelsDoc)=>{
-			res.send({levels: levelsDoc})
+			res.json({levels: levelsDoc})
 		}, (err)=>{
-			res.send({error: 'error updating levels list'})
+			res.json({error: 'error updating levels list'})
 		})
 
 	}, (err)=>{
-		res.send({error: 'error creating new level in category'})
+		res.json({error: 'error creating new level in category'})
 	})
 }
 
@@ -398,7 +374,7 @@ exports.createQuestion = (req, res) => {
 	errors = req.validationErrors();
 
 	if(errors){
-		res.send({error: errors})
+		res.json({error: errors})
 		return;
 	}
 
@@ -413,9 +389,9 @@ exports.createQuestion = (req, res) => {
 		answer: req.body.answer
 	};
 	utils.createQuestionByCategoryLevel(questionObject).then((question) =>{
-		res.send({pass: "question created"})
+		res.json({pass: "question created"})
 	}, (err) =>{
-		res.send({error: 'error creating new question'})
+		res.json({error: 'error creating new question'})
 	})
 }
 
@@ -427,7 +403,7 @@ exports.getQuestions = (req, res) => {
 	errors = req.validationErrors();
 
 	if(errors){
-		res.send({error: errors})
+		res.json({error: errors})
 		return;
 	}
 
@@ -436,9 +412,9 @@ exports.getQuestions = (req, res) => {
 		level: req.body.level
 	};
 	utils.getQuestionByCategoryLevel(questionObject).then((questions) =>{
-		res.send({questions: questions})
+		res.json({questions: questions})
 	}, (err) => {
-		res.send({error: 'error fetching questions, try again'})
+		res.json({error: 'error fetching questions, try again'})
 	})
 
 }
@@ -458,7 +434,7 @@ exports.updateQuestion = (req, res) => {
 	errors = req.validationErrors();
 
 	if(errors){
-		res.send({error: errors})
+		res.json({error: errors})
 		return;
 	}
 
@@ -474,9 +450,9 @@ exports.updateQuestion = (req, res) => {
 		questionId: req.body.questionId
 	};
 	utils.updateQuestionByCategoryLevel(updateQuestionObject).then((updatedQuestion) => {
-		res.send({updatequestion: updatedQuestion})
+		res.json({updatequestion: updatedQuestion})
 	}, (err) => {
-		res.send({error: 'error updating question, try again'})
+		res.json({error: 'error updating question, try again'})
 	})
 }
 
@@ -488,14 +464,14 @@ exports.addScore = (req, res) =>{
 	errors = req.validationErrors();
 
 	if(errors){
-		res.send({error: errors})
+		res.json({error: errors})
 		return
 	}
 
 	utils.addUserScore({email: req.body.email, score: req.body.score }).then((score)=>{
-		res.send({score: score})
+		res.json({score: score})
 	},(err)=>{
-		res.send({error: 'error updating score'})
+		res.json({error: 'error updating score'})
 	})
 }
 
@@ -507,14 +483,14 @@ exports.addToLeaderBoard = (req, res) => {
 	errors = req.validationErrors();
 
 	if(errors){
-		res.send({error: errors})
+		res.json({error: errors})
 		return
 	}
 
 	utils.updateLeaderBoard({screenname: req.body.screenname, score: req.body.score}).then((leader)=>{
-		res.send({leader: leader})
+		res.json({leader: leader})
 	},(err)=>{
-		res.send({error: err})
+		res.json({error: err})
 	})
 }
 
@@ -526,14 +502,14 @@ exports.answered = (req, res) =>{
 	errors = req.validationErrors();
 
 	if(errors){
-		res.send({error: errors})
+		res.json({error: errors})
 		return
 	}
 
 	utils.answered({email: req.body.email, questionId: req.body.questionId}).then((answered)=>{
-		res.send({answered: answered})
+		res.json({answered: answered})
 	},(err)=>{
-		res.send({error: err})
+		res.json({error: err})
 	})
 
 }

@@ -85,3 +85,25 @@ table input{
 .navbar{
 	border-radius: 0;
 }
+#addLinkBtn, #editLinkBtn{
+	width: 45%;
+	margin-left: 2.5%;
+	margin-top: 30%;
+	height: 5rem;
+}
+#addLinkBtn{
+	background-color: teal;
+}
+#addLinkBtn a{
+	color: #fff;
+}
+#editLinkBtn{
+	background-color: #00bcd4;
+	color: #fff;
+}
+#editLinkBtn a{
+	color: #fff;
+}
+nav{
+	border-radius: 0 !important;
+}

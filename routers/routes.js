@@ -6,7 +6,7 @@ const controllers = require('../controllers/controllers.js'),
 
 const isAuthorized = (req, res, next) =>{
 	let token = req.body.token
-	
+
 	jwt.verify(token, process.env.TokenSecret, (err, decoded)=>{
 		if(req.headers['x-is-admin'] == '1'){
 			if(err){
@@ -46,28 +46,25 @@ exports.routes = (app) => {
 	app.route('/api/createuser').post(controllers.createUser);
 	app.route('/api/login').post(controllers.login);
 	app.route('/api/createBackuser').post(controllers.createBackUser);
-	//app.route('/api/applogin').post(/*controllers.appLogin*/);
 
 	//category routes
 	app.route('/api/createcategory').post(isAuthorized, controllers.createCategory);
-	app.route('api/deletecategory').post(/*isAuthorized, controllers.deletcategory*/);
 	app.route('/api/category').post(isAuthorized, controllers.getCategory);
 
 	//level routes
 	app.route('/api/createlevel').post(isAuthorized, controllers.createLevel);
-	app.route('/api/deletelevel').post(/*isAuthorized, controllers.deleteLevel*/);
 	app.route('/api/level').post(isAuthorized, controllers.level);
 
 	//question routes
 	app.route('/api/createquestion').post(isAuthorized, controllers.createQuestion);
 	app.route('/api/question').post(isAuthorized, controllers.getQuestions);
 	app.route('/api/updatequestion').post(isAuthorized, controllers.updateQuestion);
-	app.route('/api/deletequestion').post(/*isAuthorized, controllers.deleteQuestion*/);
+	app.route('/api/deletequestion').post(/*isAuthorized, controllers.deleteQuestion*/); //TODO
 
 	//score route
 	app.route('/api/updatescore').post(isAuthorized, controllers.addScore);
 	app.route('/api/updateleaders').post(isAuthorized, controllers.addToLeaderBoard);
 
 	//add answered route
-	app.route('/api/answered').post(/*isAuthorized, controllers.answered*/)
+	app.route('/api/answered').post(isAuthorized, controllers.answered)
 }

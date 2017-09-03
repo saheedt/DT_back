@@ -13,22 +13,6 @@ const express = require('express'),
 
 
 let port = process.env.ServerPort || 8000;
-//let ObjectId = mongojs.ObjectId;
-
-/*db.users.find((err, docs)=>{
-	if (!err){
-		console.log(docs);
-		return;
-	}
-	console.log(err)
-});
-db.sessions.find((err, docs)=>{
-	if(!err){
-		console.log(docs);
-		return;
-	}
-	console.log(err);
-});*/
 
 app.use(session({
 	secret: process.env.secretKey,
@@ -46,9 +30,8 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.urlencoded({extended: true}));
 
-//path.join(__dirname, 'public')
 app.use(express.static('public'));
 
 app.use((req, res, next) =>{
@@ -76,4 +59,3 @@ app.use(expressValidator({
 
 routes(app);
 app.listen(port);
-console.log('dt_back started on port:', port);

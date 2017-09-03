@@ -9,6 +9,26 @@ window.addEventListener('load', ()=>{
 		window.location.replace('/');
 		return;
 	}
+
+	if(document.getElementById('logOUT')){
+		document.getElementById('logOUT').addEventListener('click', (e)=>{
+			e.preventDefault();
+			localStorage.removeItem('DT_BACK_TOK');
+			window.location.replace('/');
+		});
+	}
+
+	if(document.getElementById('homeContainer')){
+		document.getElementById('headerHomeBtn').style.display = 'none';
+		document.getElementById('headerAddBtn').style.display = 'none';
+		document.getElementById('headerEditBtn').style.display = 'none';
+		return;
+	}
+
+	if(document.getElementById('editContainer')){
+		document.getElementById('headerEditBtn').style.display = 'none';
+		return
+	}
 	
 	const errorDisplay = document.getElementById('errorContainer');
 	const getCategory = () =>{
@@ -23,7 +43,6 @@ window.addEventListener('load', ()=>{
   		body: JSON.stringify({token: localStorage.getItem('DT_BACK_TOK')})
 		}).then((resp)=>{
 			resp.json().then((res) =>{
-
 				if(res.categories){
 					if(res.categories.length <= 0){
 						catSelect.disabled = true;
@@ -138,7 +157,6 @@ window.addEventListener('load', ()=>{
 
 		if(newCategory.value == '' || newCategory.value == ' '){
 			errorDisplay.innerHTML = 'come on, do better with the category name!';
-			//$('#errorContainer').html('come on, do better with the category name!');
 			return;
 		}
 
@@ -170,7 +188,6 @@ window.addEventListener('load', ()=>{
 					return;
 				}
 				if(res.error){
-					//TODO: Handle error
 					if((res.error.name == "TokenExpiredError") || (res.error.name && res.error.message)){
 						window.location.replace('/');
 						return
@@ -184,7 +201,7 @@ window.addEventListener('load', ()=>{
 	}
 
 	if(newLevelBtn){
-	newLevelBtn.addEventListener('click', (e)=>{
+	newLevelBtn.addEventListener('click', (e)=> {
 		if(categorySelect.value == '' || categorySelect.value == ' '){
 			errorDisplay.innerHTML = 'check selected category bruh!';
 			return;
@@ -247,7 +264,6 @@ window.addEventListener('load', ()=>{
 	}
 
 	if(submitQuestionBtn){
-			//newQuestn //optnA //optnB //optnC //optnD //answer
 			submitQuestionBtn.addEventListener('click', (e)=>{
 				if(categorySelect.value == '' || categorySelect.value == ' ' || levelSelect.value == '' || levelSelect.value == ' '
 					|| question.value == '' || question.value == ' ' || optionA.value == '' || optionA.value == ' ' || optionB.value == '' 
@@ -468,14 +484,6 @@ window.addEventListener('load', ()=>{
 					"isAdmin": true
 				};
 
-				/*fetch('/api/login',{
-    				method: "POST",
-    				headers:{'Content-Type':'application/json',
-    						 'x-is-admin': '1'
-    				},
-    				body: JSON.stringify(logindata)
-    			})*/
-
 				const form = document.createElement("form");
 			  		form.setAttribute("method", "post");
 			  		form.setAttribute("action", '/api/login');
@@ -503,16 +511,6 @@ window.addEventListener('load', ()=>{
 				document.body.removeChild(form);
 				return false;
 			});
-		}
-
-		if(document.getElementById('homeBtnContainer')){
-			document.getElementById('headerHomeBtn').style.display = 'none';
-			document.getElementById('headerAddBtn').style.display = 'none';
-			document.getElementById('headerEditBtn').style.display = 'none';
-			return;
-		}
-		if(document.getElementById('editContainer')){
-			document.getElementById('headerEditBtn').style.display = 'none';
 		}
 });
 
