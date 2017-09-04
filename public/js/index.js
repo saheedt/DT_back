@@ -1,15 +1,13 @@
-window.addEventListener('load', ()=>{
+window.addEventListener('load', ()=> {
 
 	if(document.getElementById('tokInput')){
 		localStorage.setItem('DT_BACK_TOK', document.getElementById('tokInput').value)
 		document.getElementById('homeContainer').removeChild(document.getElementById('tokInput'));
-		return;
-	}
-	if(!localStorage.getItem('DT_BACK_TOK') && !document.getElementById('loginTitle')){
-		window.location.replace('/');
-		return;
 	}
 
+	if(!localStorage.getItem('DT_BACK_TOK') && !document.getElementById('loginTitle')){
+		window.location.replace('/');
+	}
 	if(document.getElementById('logOUT')){
 		document.getElementById('logOUT').addEventListener('click', (e)=>{
 			e.preventDefault();
@@ -22,17 +20,36 @@ window.addEventListener('load', ()=>{
 		document.getElementById('headerHomeBtn').style.display = 'none';
 		document.getElementById('headerAddBtn').style.display = 'none';
 		document.getElementById('headerEditBtn').style.display = 'none';
-		return;
+		
 	}
 
 	if(document.getElementById('editContainer')){
 		document.getElementById('headerEditBtn').style.display = 'none';
-		return
+		
 	}
-	
-	const errorDisplay = document.getElementById('errorContainer');
+
+
+	let newCategory = document.getElementById('newCat'),
+		categorySelect = document.getElementById('categorySelect'),
+		levelSelect = document.getElementById('levelSelect'),
+		newLevel = document.getElementById('newLev'),
+		question = document.getElementById('newQuestn'),
+		optionA = document.getElementById('optnA'),
+		optionB = document.getElementById('optnB'),
+		optionC = document.getElementById('optnC'),
+		optionD = document.getElementById('optnD'),
+		answer = document.getElementById('answer'),
+		pullQuestions = document.getElementById('pullQuestionsBtn'),
+		newCategoryBtn = document.getElementById('newCatBtn'),
+		newLevelBtn = document.getElementById('newLevBtn'),
+		submitQuestionBtn = document.getElementById('questnSubmitBtn'),
+		loginForm = document.getElementById('loginform'),
+		loginEmail = document.getElementById('loginEmail'),
+		loginPassword = document.getElementById('loginPassword'),
+		errorDisplay = document.getElementById('errorContainer');
+
+
 	const getCategory = () =>{
-		const catSelect = document.getElementById('categorySelect');
 		let categories = '';
 
 		fetch("/api/category", {
@@ -43,20 +60,21 @@ window.addEventListener('load', ()=>{
   		body: JSON.stringify({token: localStorage.getItem('DT_BACK_TOK')})
 		}).then((resp)=>{
 			resp.json().then((res) =>{
+				console.log(res)
 				if(res.categories){
 					if(res.categories.length <= 0){
-						catSelect.disabled = true;
-						$(catSelect).empty();
-						$(catSelect).append("<option value=''> --Select Category-- </option>");
-						catSelect.disabled = false;
+						categorySelect.disabled = true;
+						$(categorySelect).empty();
+						$(categorySelect).append("<option value=''> --Select Category-- </option>");
+						categorySelect.disabled = false;
 						return;
 					}
-					catSelect.disabled = true;
+					categorySelect.disabled = true;
 					$.each(res.categories, (idx, data)=>{
 						categories += `<option value=${data.categoryname} > ${data.categoryname} </option>`;
 					})
-					$(catSelect).append(categories);
-					catSelect.disabled = false;
+					$(categorySelect).append(categories);
+					categorySelect.disabled = false;
 					return;
 				}
 				if(res.error){
@@ -75,25 +93,7 @@ window.addEventListener('load', ()=>{
 	};
 
 	//**********Add and edit page************
-	let newCategory = document.getElementById('newCat'),
-		categorySelect = document.getElementById('categorySelect');
-		levelSelect = document.getElementById('levelSelect');
-		newLevel = document.getElementById('newLev'),
-		question = document.getElementById('newQuestn'),
-		optionA = document.getElementById('optnA'),
-		optionB = document.getElementById('optnB'),
-		optionC = document.getElementById('optnC'),
-		optionD = document.getElementById('optnD'),
-		answer = document.getElementById('answer'),
-		pullQuestions = document.getElementById('pullQuestionsBtn');
-
-
-
-	let newCategoryBtn = document.getElementById('newCatBtn'),
-		newLevelBtn = document.getElementById('newLevBtn'),
-		submitQuestionBtn = document.getElementById('questnSubmitBtn');
-
-
+	
 	//fetch level on category select change..
 	if(categorySelect){
 
@@ -149,11 +149,10 @@ window.addEventListener('load', ()=>{
 	});
 	}
 
-	//Add new category on category add button click.
 	if(newCategoryBtn){
 		document.getElementById('headerAddBtn').style.display = 'none';
 
-	newCategoryBtn.addEventListener('click', (e)=>{
+		newCategoryBtn.addEventListener('click', (e)=>{
 
 		if(newCategory.value == '' || newCategory.value == ' '){
 			errorDisplay.innerHTML = 'come on, do better with the category name!';
@@ -199,6 +198,8 @@ window.addEventListener('load', ()=>{
 		});
 	});
 	}
+
+	//Add new category on category add button click.
 
 	if(newLevelBtn){
 	newLevelBtn.addEventListener('click', (e)=> {
@@ -317,8 +318,52 @@ window.addEventListener('load', ()=>{
 					});
 				});
 			})
-		//});
 	}
+
+
+
+
+
+	//***********login page*********
+
+	if(loginForm){
+		loginForm.addEventListener('submit', (e) => {
+			e.preventDefault();
+			let logindata = {
+				"email": loginEmail.value,
+				"password": loginPassword.value,
+				"isAdmin": true
+			};
+
+			const form = document.createElement("form");
+			  	form.setAttribute("method", "post");
+			  	form.setAttribute("action", '/api/login');
+
+			const input = document.createElement('input');
+			  	input.type = 'hidden';
+			  	input.name = "email";
+			  	input.value = logindata.email;
+
+			const input2 = document.createElement('input');
+			  	input2.type = 'hidden';
+			  	input2.name = "password";
+			  	input2.value = logindata.password;
+
+			const input3 = document.createElement('input');
+			  	input3.type = 'hidden';
+			  	input3.name = "isAdmin";
+			  	input3.value = logindata.isAdmin;
+
+			form.appendChild(input);
+			form.appendChild(input2);
+			form.appendChild(input3);
+			document.body.appendChild(form);
+			form.submit();
+			document.body.removeChild(form);
+			return false;
+		});
+	}
+
 
 	if(pullQuestions){
 		
@@ -346,17 +391,19 @@ window.addEventListener('load', ()=>{
 				level: levelSelect.value,
 				token: localStorage.getItem('DT_BACK_TOK')
 			};
+
 			fetch("api/question", {
 				method: "POST",
 				headers:{'Content-Type':'application/json',
 						 'x-is-admin': '1'
 				},
 				body: JSON.stringify(questionObj)
-			}).then((resp) =>{
+			}).then((resp)=>{
 				resp.json().then((res)=>{
+
 					if(res.questions){
 						res.questions[0].questions.map((data, idx) =>{
-							tableData += `<tr>
+							return tableData += `<tr>
 							<td><input type="text" class="" id="question-${idx}" value="${data.question}" disabled></td>
 							<td><input type="text" class="" id="optnA-${idx}" value="${data.optionA}" disabled></td>
 							<td><input type="text" class="" id="optnB-${idx}" value="${data.optionB}" disabled></td>
@@ -366,7 +413,7 @@ window.addEventListener('load', ()=>{
 							<td style="display: none"><input type="text" class="" id="questionID-${idx}" value="${data.questionId}" disabled></td>
 							<td><button id="editBtn-${idx}" class="editbtn">EDIT</button></td>
 							<td><button id="updateBtn-${idx}" class="updatebtn" disabled>UPDATE</button></td>
-							</tr>`
+							</tr>`;
 						});
 						$('#questionTable').empty();
 						$('#questionTable').append(tableData);
@@ -462,56 +509,11 @@ window.addEventListener('load', ()=>{
 						errorDisplay.innerHTML = res.error;
 						return;
 					}
-				});
+					
+				})
 			})
-		});
+		})
 	}
 
 
-	//***********login page*********
-
-	let loginForm = document.getElementById('loginform'),
-		loginEmail = document.getElementById('loginEmail'),
-		loginPassword = document.getElementById('loginPassword');
-
-		if(loginForm){
-			loginForm.addEventListener('submit', (e) => {
-				e.preventDefault();
-				console.log('login command got called in index.js..');
-				let logindata = {
-					"email": loginEmail.value,
-					"password": loginPassword.value,
-					"isAdmin": true
-				};
-
-				const form = document.createElement("form");
-			  		form.setAttribute("method", "post");
-			  		form.setAttribute("action", '/api/login');
-
-				const input = document.createElement('input');
-			  		input.type = 'hidden';
-			  		input.name = "email";
-			  		input.value = logindata.email;
-
-				const input2 = document.createElement('input');
-			  		input2.type = 'hidden';
-			  		input2.name = "password";
-			  		input2.value = logindata.password;
-
-			  	const input3 = document.createElement('input');
-			  		input3.type = 'hidden';
-			  		input3.name = "isAdmin";
-			  		input3.value = logindata.isAdmin;
-
-				form.appendChild(input);
-				form.appendChild(input2);
-				form.appendChild(input3);
-				document.body.appendChild(form);
-				form.submit();
-				document.body.removeChild(form);
-				return false;
-			});
-		}
 });
-
-
