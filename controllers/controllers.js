@@ -100,6 +100,8 @@ exports.createUser = (req, res) => {
 												let user = {
 													"email": newUser.email,
 													"screenname": newUser.screenname,
+													"score": newUser.score,
+													"answered": newUser.answered,
 													"type": "client",
 													"token": token
 												};
@@ -189,7 +191,7 @@ exports.login = (req, res) => {
 		res.json({error: errors})
 		return;
 	}
-	utils.db.users.findOne({"email": req.body.email}, {email: 1, password: 1, admin: 1, screenname: 1}, (err, doc)=>{
+	utils.db.users.findOne({"email": req.body.email}, {email: 1, password: 1, admin: 1, screenname: 1, score: 1, answered : 1}, (err, doc)=>{
 		let output;
 		if(err){
 			if(req.body.isAdmin){
@@ -235,6 +237,8 @@ exports.login = (req, res) => {
 									"email": doc.email,
 									"screenname": doc.screenname,
 									"type": "client",
+									"score": doc.score,
+									"answered": doc.answered,
 									"token": token
 								};
 								res.json({"user": output});
@@ -261,8 +265,6 @@ exports.login = (req, res) => {
 
 exports.getCategory = (req, res) => {
 	utils.fetchCategories().then((doc) => {
-		let sess = req.session;
-		res.statusCode
 		res.json({categories: doc})
 	}, (err) => {
 		res.json({error: 'error fetching categories'})
