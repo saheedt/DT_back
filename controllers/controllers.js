@@ -47,7 +47,7 @@ exports.createUser = (req, res) => {
 	req.checkBody('password', 'Password should be between 8 to 30 characters.').len(8, 30);
 	req.checkBody('password_repeat', 'Password confirmation is required.').notEmpty();
 	req.checkBody('admin', 'You are not allowed here.').notEmpty();
-	req.checkBody('admin', 'You are not allowed this resource.').equals('0');
+	req.checkBody('admin', 'You are not allowed this resource.').equals('1');
 	req.checkBody('password_repeat', 'Passwords do not match').equals(req.body.password);
 
 	errors = req.validationErrors();
@@ -131,7 +131,7 @@ exports.createBackUser = (req, res) => {
 	req.checkBody('password', 'password is required.').notEmpty();
 	req.checkBody('password_repeat', 'password confirmation is required.').notEmpty();
 	req.checkBody('admin', 'you are not allowed here.').notEmpty();
-	req.checkBody('admin', 'you are not allowed this resource.').equals('1');
+	req.checkBody('admin', 'you are not allowed this resource.').equals('0');
 	req.checkBody('password_repeat', 'passwords do not match').equals(req.body.password);
 
 
