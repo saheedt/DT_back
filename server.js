@@ -12,7 +12,11 @@ const express = require('express'),
 	app = express();
 	require('dotenv').config();
 
-app.use(cors());
+const corsOptions = {
+	origin: '*://*.*',
+	optionsSuccessStatus: 200
+  }
+app.use(cors(corsOptions));
 
 let port = process.env.PORT || 8000;
 
