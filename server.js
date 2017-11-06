@@ -8,9 +8,11 @@ const express = require('express'),
 	cookieParser = require('cookie-parser'),
 	session = require('express-session'),
 	MongoStore = require('connect-mongo')(session),
+	cors = require('cors'),
 	app = express();
 	require('dotenv').config();
 
+app.use(cors());
 
 let port = process.env.PORT || 8000;
 
@@ -56,11 +58,11 @@ app.use(expressValidator({
 			};
 	}
 }));
-app.use(function(req, res, next) {
+/*app.use(function(req, res, next) {
 	res.header("Access-Control-Allow-Origin", "*");
 	res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
 	next();
-  });
+  });*/
 
 routes(app);
 app.listen(port);
