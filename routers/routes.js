@@ -10,7 +10,6 @@ const isAuthorized = (req, res, next) =>{
 	jwt.verify(token, process.env.TokenSecret, (err, decoded)=>{
 		if(req.headers['x-is-admin'] == '1'){
 			if(err){
-				res.status(401);
 				res.json({error: {name: err.name, message: err.message}})
 				return
 			}
@@ -22,7 +21,6 @@ const isAuthorized = (req, res, next) =>{
 		}
 		if(req.headers['x-is-admin'] == '0'){
 			if(err){
-				res.status(401)
 				res.json({error: {name: err.name, message: err.message}})
 				return
 			}
