@@ -210,6 +210,19 @@ exports.login = (req, res) => {
 				res.json({error: 'you have to sign up first!!!'})
 			}else{
 				bcrypt.compare(req.body.password, doc.password, (cryptErr, resp) => {
+
+					if(cryptErr){
+						if(doc.admin == "1"){
+							globLoginErr =  'incorrect password'
+							res.redirect('/')
+							return;
+						}
+						if(doc.admin == "0"){
+							res.json({"error": "incorrect password"});
+							return;
+						}						
+					}
+					
 					if(resp){
 						let toTok = {
 							"email": doc.email,
@@ -245,17 +258,6 @@ exports.login = (req, res) => {
 								return;
 							}
 						});
-					}
-					if(cryptErr){
-						if(doc.admin == "1"){
-							globLoginErr =  'incorrect password'
-							res.redirect('/')
-							return;
-						}
-						if(doc.admin == "0"){
-							res.json({"error": "incorrect password"});
-							return;
-						}						
 					}
 				});
 			}
