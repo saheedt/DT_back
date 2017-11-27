@@ -25,16 +25,19 @@ const isAuthorized = (req, res, next) =>{
 				return
 			}
 			if(decoded){
-				return next()
+				next()
+				return
 			}		
 		}
 	})
 };
 
 const setHeader = (req, res, next) => {
-	res.set("Access-Control-Allow-Origin", "*");
-	res.set("Access-Control-Allow-Headers", ["x-is-admin, Origin, X-Requested-With, Content-Type, Accept, Authorization"]);
-	return next();
+	res.set("Access-Control-Allow-Origin", "*")
+	res.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE")
+	res.set("Access-Control-Allow-Headers", ["x-is-admin, Origin, X-Requested-With, Content-Type, Accept, Authorization"])
+	res.set("Access-Control-Allow-Credentials", true)
+	next();
 }
 
 exports.routes = (app) => {
