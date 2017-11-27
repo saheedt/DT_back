@@ -16,10 +16,10 @@ const express = require('express'),
 let port = process.env.PORT || 8000;
 
 app.use((req, res, next) => {
-	res.locals.errors = null;
-	res.locals.docs = null;
 	res.set("Access-Control-Allow-Origin", "*");
 	res.set("Access-Control-Allow-Headers", ["x-is-admin, Origin, X-Requested-With, Content-Type, Accept, Authorization"]);
+	res.locals.errors = null;
+	res.locals.docs = null;
 	return next();
 });
 
