@@ -13,10 +13,14 @@ const express = require('express'),
 	require('dotenv').config();
 
 
-app.options('*', cors());
-//app.use(cors());
-
 let port = process.env.PORT || 8000;
+
+app.use((req, res, next) => {
+	res.locals.errors = null;
+	res.locals.docs = null;
+	res.header("Access-Control-Allow-Origin", "*");
+	return next();
+});
 
 app.use(session({
 	secret: process.env.secretKey,
@@ -38,11 +42,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 app.use(express.static('public'));
 
-app.use((req, res, next) =>{
-	res.locals.errors = null;
-	res.locals.docs = null;
-	next();
-});
+
 
 app.use(expressValidator({
 	errorFormatter: (param, msg, value)=>{
