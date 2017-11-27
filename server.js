@@ -18,15 +18,16 @@ let port = process.env.PORT || 8000;
 app.use((req, res, next) => {
 	res.locals.errors = null;
 	res.locals.docs = null;
-	next();
-})
-
-/*
-res.set("Access-Control-Allow-Origin", "*")
+	
+	res.set("Access-Control-Allow-Origin", "*")
 	res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
 	res.set("Access-Control-Allow-Headers", ["x-is-admin, Origin, X-Requested-With, Content-Type, Accept, Authorization"])
 	res.set("Access-Control-Allow-Credentials", true);
-*/
+
+	next();
+})
+
+
 app.use(session({
 	secret: process.env.secretKey,
 	resave: true,
