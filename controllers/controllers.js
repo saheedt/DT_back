@@ -202,6 +202,8 @@ exports.login = (req, res) => {
 			res.json({error: 'email address not found on this platform'})			
 		}else{
 			if( doc == null){
+				console.log('error doc', doc);
+
 				if(req.body.isAdmin){
 					globLoginErr = 'you have to sign up first!!!'
 					res.redirect('/')
@@ -211,7 +213,7 @@ exports.login = (req, res) => {
 			}else{
 				bcrypt.compare(req.body.password, doc.password, (cryptErr, resp) => {
 
-					if(cryptErr){
+					if(cryptErr || !resp){
 						if(doc.admin == "1"){
 							globLoginErr =  'incorrect password'
 							res.redirect('/')
@@ -224,6 +226,7 @@ exports.login = (req, res) => {
 					}
 					
 					if(resp){
+						
 						let toTok = {
 							"email": doc.email,
 							"screenname": doc.screenname,
